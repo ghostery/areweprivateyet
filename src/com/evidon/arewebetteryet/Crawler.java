@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -16,7 +18,7 @@ public class Crawler {
 	ArrayList<String> urls = new ArrayList<String>();
 	
 	private void loadSiteList() throws Exception {
-		BufferedReader in = new BufferedReader(new FileReader(path + "top500.list"));
+		BufferedReader in = new BufferedReader(new FileReader(path + "timeouts.list"));
 	    String line = in.readLine();
 	    while (line != null) {
 	        urls.add(line);
@@ -79,7 +81,10 @@ public class Crawler {
 		loadSiteList();
 		
 		WebDriver driver = new FirefoxDriver(manageProfile(xpi));
-		
+		driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
+		driver.manage().timeouts().pageLoadTimeout(40, TimeUnit.SECONDS);
+		driver.manage().timeouts().setScriptTimeout(40, TimeUnit.SECONDS);
+
 		// figure out where the fucking profile is. wow!
 		String profileDir = getDriverProfile();
 
@@ -90,12 +95,19 @@ public class Crawler {
         	System.out.println("Starting crawling");
         	break;
         }
-		
+ 	
 		for (String url : urls) {
+
 			System.out.println("navigating to: " + url);
-			driver.get("http://" + url);
-			// WTF, why would their own fucking wait not work?!?
-			// new WebDriverWait(driver, 5 * 1000);
+
+			try {
+				driver.get("http://" + url);
+				// WTF, why would their own fucking wait not work?!?
+				// new WebDriverWait(driver, 5 * 1000);
+			} catch (TimeoutException te) {
+				System.out.println("Timed out, skipping.");
+			}
+
 			try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { }
 		}
 		
