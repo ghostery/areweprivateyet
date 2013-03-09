@@ -18,7 +18,7 @@ public class Crawler {
 	ArrayList<String> urls = new ArrayList<String>();
 	
 	private void loadSiteList() throws Exception {
-		BufferedReader in = new BufferedReader(new FileReader(path + "timeouts.list"));
+		BufferedReader in = new BufferedReader(new FileReader(path + "top500.list"));
 	    String line = in.readLine();
 	    while (line != null) {
 	        urls.add(line);
@@ -115,13 +115,14 @@ public class Crawler {
 		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/" + System.currentTimeMillis() + "-fourthparty.sqlite"));
 		
 		driver.quit();
+		System.out.println("Crawling completed.");
 	}
 
 	public static void main(String args[]) {
 		try {
-			new Crawler(null);
+			//new Crawler(null);
 			// with ghostery:
-			// new Crawler("ghostery-amo-v2.9.2.xpi");
+			new Crawler("ghostery-amo-v2.9.2.xpi");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
