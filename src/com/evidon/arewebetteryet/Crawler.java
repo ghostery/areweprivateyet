@@ -4,17 +4,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
 
 public class Crawler {
-	String path = "C:\\Users\\fixanoid\\workspace\\arewebetteryet\\src\\";
+	String path = "C:\\Users\\fixanoid-work\\Desktop\\arewebetteryet\\src\\";
 	ArrayList<String> urls = new ArrayList<String>();
 	
 	private void loadSiteList() throws Exception {
@@ -25,17 +24,6 @@ public class Crawler {
 	        line = in.readLine();
 	    }
 	    in.close();
-	}
-
-	private FirefoxProfile manageProfile(String xpi) throws Exception {
-		FirefoxProfile firefoxProfile = new FirefoxProfile();
-		firefoxProfile.addExtension(new File(path + "extensions/" + "fourthparty.xpi"));
-
-		if (xpi != null) {
-			firefoxProfile.addExtension(new File(path + "extensions/" + xpi));
-		}
-
-		return firefoxProfile;
 	}
 
 	private String getDriverProfile() {
@@ -60,27 +48,13 @@ public class Crawler {
 			
 		return pd.toString();
 	}
-	
-	/*
-	 1. Setup Firefox instance
-	 2. Crawl domains
-	 3. Collect info
-	 	- cookies
-	 		- totals
-	 		- amount set per domain or per tracker
-	 	- flash cookies
-	 	- local storage
-	 	- requests
-	 		- totals
-	 	- redirects
-	 		- totals
-	 	- amount of data transfer
-	 */
 
-	public Crawler(String xpi) throws Exception {
+	public Crawler(String namedProfile) throws Exception {
 		loadSiteList();
 		
-		WebDriver driver = new FirefoxDriver(manageProfile(xpi));
+		ProfilesIni profile = new ProfilesIni();
+		WebDriver driver = new FirefoxDriver(profile.getProfile(namedProfile));
+
 		driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
 		driver.manage().timeouts().pageLoadTimeout(40, TimeUnit.SECONDS);
 		driver.manage().timeouts().setScriptTimeout(40, TimeUnit.SECONDS);
@@ -88,16 +62,9 @@ public class Crawler {
 		// figure out where the fucking profile is. wow!
 		String profileDir = getDriverProfile();
 
-		Scanner sc = new Scanner(System.in);
-        System.out.println("Waiting to configuration. Press enter when setup is complete.");
-        
-        while(sc.hasNextLine()) {
-        	System.out.println("Starting crawling");
-        	break;
-        }
+        System.out.println("Crawling started.");
  	
 		for (String url : urls) {
-
 			System.out.println("navigating to: " + url);
 
 			try {
@@ -112,17 +79,32 @@ public class Crawler {
 		}
 		
 		// copy the fourthparty database out.
-		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/" + System.currentTimeMillis() + "-fourthparty.sqlite"));
-		
+		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/" + namedProfile + "-fourthparty.sqlite"));
+
 		driver.quit();
 		System.out.println("Crawling completed.");
 	}
 
 	public static void main(String args[]) {
+		/*
+		FourthParty todo:
+		 3. Collect info
+		 	- cookies
+		 		- totals
+		 		- amount set per domain or per tracker
+		 	- flash cookies
+		 	- local storage
+		 	- requests
+		 		- totals
+		 	- redirects
+		 		- totals
+		 	- amount of data transfer
+		 */
 		try {
-			//new Crawler(null);
-			// with ghostery:
-			new Crawler("ghostery-amo-v2.9.2.xpi");
+			String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "collusion", "disconnect", "noscript"};
+			for (String profile : profiles) {
+				new Crawler(profile);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
