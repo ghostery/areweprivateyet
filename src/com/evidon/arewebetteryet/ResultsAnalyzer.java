@@ -14,6 +14,8 @@ public class ResultsAnalyzer {
 	Map<String, Integer> cookiesAdded = new HashMap<String, Integer>();
 	Map<String, Integer> cookiesDeleted = new HashMap<String, Integer>();
 
+	int totalContentLength = 0;
+
 	public ResultsAnalyzer(String dbFileName) throws Exception {
 		Class.forName("org.sqlite.JDBC");
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + path + dbFileName);
@@ -82,28 +84,21 @@ public class ResultsAnalyzer {
 		}
 		rs.close();
 		
+		
+		// total content length
+		rs = statement.executeQuery("select value from http_response_headers where name = 'Content-Length'");
+		while(rs.next()) {
+			totalContentLength += rs.getInt("value");
+		}
+		rs.close();
+		
 		conn.close();
-/*
-		//requestCountPerDomain = AnalysisUtils.sortByValue(requestCountPerDomain);
-		System.out.println("Request count per domain");
-		for (String domain : requestCountPerDomain.keySet()) {
-			System.out.println(domain + "|" + requestCountPerDomain.get(domain).intValue());
-		}
-
-		System.out.println();
-		System.out.println();
-		System.out.println("Set-Cookie response count per domain");
-		//setCookieResponses = AnalysisUtils.sortByValue(setCookieResponses);
-
-		for (String domain : setCookieResponses.keySet()) {
-			System.out.println(domain + "|" + setCookieResponses.get(domain).intValue());
-		}
-*/
 	}
 
 	public static void main(String[] args) {
 		try {
-			new ResultsAnalyzer("baseline-fourthparty.sqlite");
+			ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
+			System.out.println(ra.totalContentLength);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
