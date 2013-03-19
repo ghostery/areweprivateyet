@@ -77,6 +77,10 @@ public class Crawler {
 
 			try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { }
 		}
+
+		// navigating to the trip site for local storage copy.
+		try { driver.get("http://www.josesignanini.com"); } catch (TimeoutException te) { }
+		try { Thread.sleep(60 * 1000); } catch (InterruptedException e) { }
 		
 		// copy the fourthparty database out.
 		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/" + namedProfile + "-fourthparty.sqlite"));
@@ -87,18 +91,14 @@ public class Crawler {
 
 	public static void main(String args[]) {
 		/*
-		FourthParty todo:
-		 3. Collect info
+		FourthParty collect info. Implemented:
 		 	- cookies
-		 		- totals
-		 		- amount set per domain or per tracker
+		 	- requests
+		 	- redirects
+		 	- amount of data transfer
+	 	TODO:
 		 	- flash cookies
 		 	- local storage
-		 	- requests
-		 		- totals
-		 	- redirects
-		 		- totals
-		 	- amount of data transfer
 		 */
 		try {
 			String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "collusion", "disconnect", "noscript"};
