@@ -45,6 +45,10 @@ public class AnalysisUtils {
 			url = url.substring(0, url.indexOf("|"));
 		}
 		
+		if (url.indexOf("_") > 0) {
+			url = url.replaceAll("_", "");
+		}
+		
 		String host = new URI(url).getHost();
 		try {
 			InternetDomainName domainName = InternetDomainName.from(host);
