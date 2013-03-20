@@ -3,6 +3,8 @@ package com.evidon.arewebetteryet;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -14,7 +16,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 public class ResultsAggregator {
-	HashMap<String, ResultsAnalyzer> results = new HashMap<String, ResultsAnalyzer>();
+	Map<String, ResultsAnalyzer> results = new LinkedHashMap<String, ResultsAnalyzer>();
 	
 	public ResultsAggregator() { }
 	
@@ -61,13 +63,13 @@ public class ResultsAggregator {
 	}
 
 	public void createSpreadSheet() throws Exception {
-		int rownum = 2, cellnum = 0;
+		int rownum = 2, cellnum = 0, sheetnum = 0;
 		FileOutputStream file = new FileOutputStream("analysis.xls");
 
 		Workbook wb = new HSSFWorkbook();
 
 		Sheet s = wb.createSheet();
-		wb.setSheetName(0, "Content Length");
+		wb.setSheetName(sheetnum, "Content Length");
 		this.createHeader(wb, s, "Total Content Length in MB", 0);
 
 		// content: total content length sheet.
@@ -77,13 +79,14 @@ public class ResultsAggregator {
 			c.setCellValue(results.get(database).totalContentLength / 1024 / 1024);
 			cellnum ++;
 		}
+		sheetnum++;
 
 		// content: HTTP Requests
 		s = wb.createSheet();
-		wb.setSheetName(1, "HTTP Requests");
+		wb.setSheetName(sheetnum, "HTTP Requests");
 		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix", 1);
 
-		HashMap<String, String> out = new HashMap<String, String>();
+		Map<String, String> out = new HashMap<String, String>();
 		ArrayList<String> domains = new ArrayList<String>();
 
 		// create a merged list of domains.
@@ -114,9 +117,13 @@ public class ResultsAggregator {
 				ResultsAnalyzer ra = results.get(database);
 
 				c = r.createCell(cellnum);
-				if (ra.requestCountPerDomain.containsKey(domain)) {
-					c.setCellValue(ra.requestCountPerDomain.get(domain));
-				} else {
+				try {
+					if (ra.requestCountPerDomain.containsKey(domain)) {
+						c.setCellValue(ra.requestCountPerDomain.get(domain));
+					} else {
+						c.setCellValue(0);
+					}
+				} catch (Exception e) {
 					c.setCellValue(0);
 				}
 				
@@ -127,11 +134,70 @@ public class ResultsAggregator {
 
 			rownum++;
 		}
+		sheetnum++;
 
+
+		// content: HTTP Requests minus First Parties
+		s = wb.createSheet();
+		rownum = 2;
+		cellnum = 0;
+
+		wb.setSheetName(sheetnum, "HTTP Requests minus First Parties");
+		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix minus First Parties", 1);
+
+		out = new HashMap<String, String>();
+		domains = new ArrayList<String>();
+
+		// create a merged list of domains.
+		for (String database : results.keySet()) {
+			ResultsAnalyzer ra = results.get(database);
+					
+			for (String domain : ra.requestCountPerDomainMinusFirstParties.keySet()) {
+				if (!domains.contains(domain)) {
+					domains.add(domain);
+					out.put(domain, "");
+				}
+			}
+		}
+
+		cs = wb.createCellStyle();
+		cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("number"));
+		s.setColumnWidth(0, 5000);
+
+		for (String domain : domains) {
+			cellnum = 0;
+
+			r = s.createRow(rownum);
+			Cell c = r.createCell(cellnum);
+			c.setCellValue(domain);
+			cellnum++;
+					
+			for (String database : results.keySet()) {
+				ResultsAnalyzer ra = results.get(database);
+
+				c = r.createCell(cellnum);
+				try {
+					if (ra.requestCountPerDomainMinusFirstParties.containsKey(domain)) {
+						c.setCellValue(ra.requestCountPerDomainMinusFirstParties.get(domain));
+					} else {
+						c.setCellValue(0);
+					}
+				} catch (Exception e) {
+					c.setCellValue(0);
+				}
+						
+				c.setCellStyle(cs);
+				
+				cellnum++;
+			}
+			rownum++;
+		}
+		sheetnum++;
+		
 		
 		// content: HTTP Set-Cookie Responses
 		s = wb.createSheet();
-		wb.setSheetName(2, "HTTP Set-Cookie Responses");
+		wb.setSheetName(sheetnum, "HTTP Set-Cookie Responses");
 		this.createHeader(wb, s, "Pages with One or More HTTP Responses from the Public Suffix That Include a Set-Cookie Header", 1);
 
 		out = new HashMap<String, String>();
@@ -167,9 +233,13 @@ public class ResultsAggregator {
 				ResultsAnalyzer ra = results.get(database);
 
 				c = r.createCell(cellnum);
-				if (ra.cookiesAdded.containsKey(domain)) {
-					c.setCellValue(ra.cookiesAdded.get(domain));
-				} else {
+				try {
+					if (ra.cookiesAdded.containsKey(domain)) {
+						c.setCellValue(ra.cookiesAdded.get(domain));
+					} else {
+						c.setCellValue(0);
+					}
+				} catch (Exception e) {
 					c.setCellValue(0);
 				}
 				
