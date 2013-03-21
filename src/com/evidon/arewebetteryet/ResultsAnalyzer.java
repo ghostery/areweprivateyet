@@ -12,7 +12,8 @@ import java.util.Map;
 import com.google.common.collect.Ordering;
 
 public class ResultsAnalyzer {
-	String path = "C:/Users/fixanoid/workspace/arewebetteryet/src/";
+	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
+	String path = System.getProperty("awby_path");
 	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
 	Map<String, Integer> setCookieResponses = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
@@ -150,10 +151,10 @@ public class ResultsAnalyzer {
 		conn.close();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		try {
-			ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
-			System.out.println(ra.totalContentLength);
+		//	ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
+		//	System.out.println(ra.totalContentLength);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

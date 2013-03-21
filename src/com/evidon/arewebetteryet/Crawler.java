@@ -13,7 +13,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
 public class Crawler {
-	String path = "C:\\Users\\fixanoid-work\\Desktop\\arewebetteryet\\src\\";
+	// VM prop -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
+	String path = System.getProperty("awby_path");
 	ArrayList<String> urls = new ArrayList<String>();
 	
 	private void loadSiteList() throws Exception {
@@ -83,7 +84,7 @@ public class Crawler {
 		try { Thread.sleep(60 * 1000); } catch (InterruptedException e) { }
 		
 		// copy the fourthparty database out.
-		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/" + namedProfile + "-fourthparty.sqlite"));
+		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/fourthparty-" + namedProfile + ".sqlite"));
 
 		driver.quit();
 		System.out.println("Crawling completed.");
@@ -95,13 +96,13 @@ public class Crawler {
 		 	- cookies
 		 	- requests
 		 	- redirects
+		 	- local storage
 		 	- amount of data transfer
 	 	TODO:
 		 	- flash cookies
-		 	- local storage
 		 */
 		try {
-			String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "collusion", "disconnect", "noscript"};
+			String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect", "noscript"};
 			for (String profile : profiles) {
 				new Crawler(profile);
 			}
