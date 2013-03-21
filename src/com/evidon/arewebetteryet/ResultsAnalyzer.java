@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,12 +24,41 @@ public class ResultsAnalyzer {
 
 	int totalContentLength = 0;
 
+	private void createForwardHostColumnForLocalStorage(Statement statement) throws Exception {
+		Map<String, String> hostMap = new HashMap<String, String>();
+		
+		statement.execute("ALTER TABLE local_storage ADD host TEXT");
+
+		ResultSet rs = statement.executeQuery("select id, scope from local_storage");
+		while (rs.next()) {
+			String host = new StringBuilder(rs.getString("scope")).reverse().toString();
+			host = host.replaceAll(":https?:[0-9][0-9][0-9]?", "");
+
+			hostMap.put(rs.getString("id"), host);
+		}
+		rs.close();
+		
+		PreparedStatement updateQuery = statement.getConnection().prepareStatement("UPDATE local_storage SET host = ? WHERE id = ?");
+		
+		for (String id : hostMap.keySet()) {
+			updateQuery.setString(1, hostMap.get(id));
+			updateQuery.setString(2, id);
+			
+			updateQuery.executeUpdate();
+		}
+		
+		updateQuery.close();
+	}
+
+
 	public ResultsAnalyzer(String dbFileName) throws Exception {
 		Class.forName("org.sqlite.JDBC");
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + path + dbFileName);
 
 		Statement statement = conn.createStatement();
-		
+
+		createForwardHostColumnForLocalStorage(statement);
+
 		// Request Count
 		ResultSet rs = statement.executeQuery("select * from http_requests where url is not null");
 		while (rs.next()) {
@@ -151,10 +182,10 @@ public class ResultsAnalyzer {
 		conn.close();
 	}
 
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
 		try {
-		//	ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
-		//	System.out.println(ra.totalContentLength);
+			ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
+			System.out.println(ra.totalContentLength);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
