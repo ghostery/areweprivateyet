@@ -76,7 +76,7 @@ public class Crawler {
 				System.out.println("Timed out, skipping.");
 			}
 
-			try { Thread.sleep(5 * 1000); } catch (InterruptedException e) { }
+			try { Thread.sleep(10 * 1000); } catch (InterruptedException e) { }
 		}
 
 		// navigating to the trip site for local storage copy.

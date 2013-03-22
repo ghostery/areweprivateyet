@@ -13,26 +13,72 @@ import java.util.Map;
 
 import com.google.common.collect.Ordering;
 
-public class ResultsAnalyzer {
+public class Analyzer {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
 	String path = System.getProperty("awby_path");
+
 	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
 	Map<String, Integer> setCookieResponses = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> cookiesAdded = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> cookiesDeleted = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
+	Map<String, Integer> cookieTotals = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
+	Map<String, Integer> localStorageContents = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 
 	int totalContentLength = 0;
 
+	private void createCleanedUpRedirectHosts(Statement statement) throws Exception {
+		try {
+			statement.execute("ALTER TABLE redirects ADD from_host TEXT");
+			statement.execute("ALTER TABLE redirects ADD to_host TEXT");
+			statement.execute("ALTER TABLE redirects ADD parent_host TEXT");
+		} catch (Exception e) {
+			// Columns exist.
+		}
+
+		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
+				"UPDATE redirects SET from_host = ?, to_host = ?, parent_host = ? WHERE id = ?");
+
+		ResultSet rs = statement.executeQuery("select * from redirects");
+		while (rs.next()) {
+			updateQuery.setString(1, AnalysisUtils.getGuavaDomain(rs.getString("from_channel")));
+			updateQuery.setString(2, AnalysisUtils.getGuavaDomain(rs.getString("to_channel")));
+			try {
+				updateQuery.setString(3, AnalysisUtils.getGuavaDomain(rs.getString("parent_location")));
+			} catch (Exception e) {
+				updateQuery.setString(3, rs.getString("parent_location"));
+			}
+			updateQuery.setString(4, rs.getString("id"));
+			
+			updateQuery.executeUpdate();
+		}
+		rs.close();
+		
+		updateQuery.close();
+	}
+	
 	private void createForwardHostColumnForLocalStorage(Statement statement) throws Exception {
 		Map<String, String> hostMap = new HashMap<String, String>();
 		
-		statement.execute("ALTER TABLE local_storage ADD host TEXT");
+		try {
+			statement.execute("ALTER TABLE local_storage ADD host TEXT");
+		} catch (Exception e) {
+			// Column exists.
+		}
 
 		ResultSet rs = statement.executeQuery("select id, scope from local_storage");
 		while (rs.next()) {
-			String host = new StringBuilder(rs.getString("scope")).reverse().toString();
+			String host = rs.getString("scope");
 			host = host.replaceAll(":https?:[0-9][0-9][0-9]?", "");
+			host = new StringBuilder(host).reverse().toString();
+			
+			if (host.startsWith(".")) {
+				host = host.substring(1);
+			}
+			
+			if (host.startsWith("www.")) {
+				host = host.substring(4);
+			}
 
 			hostMap.put(rs.getString("id"), host);
 		}
@@ -51,13 +97,15 @@ public class ResultsAnalyzer {
 	}
 
 
-	public ResultsAnalyzer(String dbFileName) throws Exception {
+	public Analyzer(String dbFileName) throws Exception {
 		Class.forName("org.sqlite.JDBC");
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + path + dbFileName);
 
 		Statement statement = conn.createStatement();
 
 		createForwardHostColumnForLocalStorage(statement);
+		// Uncomment once new crawling run has been made
+		//createCleanedUpRedirectHosts(statement);
 
 		// Request Count
 		ResultSet rs = statement.executeQuery("select * from http_requests where url is not null");
@@ -139,7 +187,7 @@ public class ResultsAnalyzer {
 		rs = statement.executeQuery(
 				"select * from cookies");
 		while(rs.next()) {
-			String domain = rs.getString("host");
+			String domain = rs.getString("raw_host");
 
 			if (rs.getString("change").equals("added")) {
 				try {
@@ -165,8 +213,46 @@ public class ResultsAnalyzer {
 						cookiesDeleted.put(domain, new Integer(1));
 					}
 				} catch (java.lang.IllegalArgumentException e) {
-					cookiesAdded.put(domain, new Integer(1));
+					cookiesDeleted.put(domain, new Integer(1));
 				}
+			}
+		}
+		rs.close();
+		
+		// Subtract deleted from added to achieve cookie totals
+		//		Note: May be possible just to use the above query set to do the same.
+		for (String domain : cookiesAdded.keySet()) {
+			int cookieNum = cookiesAdded.get(domain);
+			
+			try {
+				if (cookiesDeleted.containsKey(domain)) {
+					cookieNum = cookieNum - cookiesDeleted.get(domain);
+				}
+			} catch (java.lang.IllegalArgumentException e) {
+				// nothing in the deleted map.
+			}
+			
+			cookieTotals.put(domain, new Integer(cookieNum));
+		}
+		
+		
+		// Local Storage
+		rs = statement.executeQuery(
+				"select * from local_storage");
+		while(rs.next()) {
+			String domain = rs.getString("host");
+
+			try {
+				if (localStorageContents.containsKey(domain)) {
+					// increase hit count
+					Integer count = localStorageContents.get(domain);
+					localStorageContents.put(domain, new Integer(count.intValue() + 1));
+				} else {
+					// insert new domain and initial count
+					localStorageContents.put(domain, new Integer(1));
+				}
+			} catch (java.lang.IllegalArgumentException e) {
+				localStorageContents.put(domain, new Integer(1));
 			}
 		}
 		rs.close();
@@ -184,8 +270,9 @@ public class ResultsAnalyzer {
 
 	public static void main(String[] args) {
 		try {
-			ResultsAnalyzer ra = new ResultsAnalyzer("baseline-fourthparty.sqlite");
+			Analyzer ra = new Analyzer("fourthparty-baseline.sqlite");
 			System.out.println(ra.totalContentLength);
+			System.out.println(ra.localStorageContents.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

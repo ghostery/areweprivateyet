@@ -49,6 +49,11 @@ public class AnalysisUtils {
 			url = url.replaceAll("_", "");
 		}
 		
+		// strip port
+		if (url.indexOf(":8080") > 0) {
+			url = url.replaceAll(":8080", "");
+		}
+		
 		String host = new URI(url).getHost();
 		try {
 			InternetDomainName domainName = InternetDomainName.from(host);
