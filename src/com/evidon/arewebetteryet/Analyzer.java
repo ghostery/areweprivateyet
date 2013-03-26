@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Ordering;
@@ -26,6 +28,144 @@ public class Analyzer {
 	Map<String, Integer> localStorageContents = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 
 	int totalContentLength = 0;
+	
+
+	private void createPublicSuffix(Statement statement) throws Exception {
+		try {
+			statement.execute("ALTER TABLE pages ADD public_suffix TEXT");
+		} catch (Exception e) {
+			// Column exists.
+		}
+		
+		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
+				"UPDATE pages SET public_suffix=? WHERE id=?");
+		
+		ResultSet rs = statement.executeQuery("SELECT id, location FROM pages WHERE location is not null and location !='' ");
+		while (rs.next()) {
+			String domain = "";
+			try {
+				domain = AnalysisUtils.getGuavaDomain(rs.getString("location"));
+			} catch (Exception e) {
+				//System.out.println("Cant parse this domain: " + rs.getString("location"));
+				//e.printStackTrace();
+				continue;
+			}
+
+			updateQuery.clearParameters();
+			updateQuery.setString(1, domain);
+			updateQuery.setString(2, rs.getString("id"));
+			updateQuery.executeUpdate();
+		}
+		rs.close();
+		updateQuery.close();
+
+		try {
+			statement.execute("ALTER TABLE http_requests ADD public_suffix TEXT");
+		} catch (Exception e) {
+			// Column exists.
+		}
+		
+		updateQuery = statement.getConnection().prepareStatement(
+				"UPDATE http_requests SET public_suffix=? WHERE id=?");
+		
+		rs = statement.executeQuery("SELECT id, url FROM http_requests WHERE url is not null and url !='' ");
+		while (rs.next()) {
+			String domain = "";
+			try {
+				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
+			} catch (Exception e) {
+				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				//e.printStackTrace();
+				continue;
+			}
+
+			updateQuery.clearParameters();
+			updateQuery.setString(1, domain);
+			updateQuery.setString(2, rs.getString("id"));
+			updateQuery.executeUpdate();
+		}
+		rs.close();
+		updateQuery.close();
+		
+		
+		try {
+			statement.execute("ALTER TABLE http_responses ADD public_suffix TEXT");
+		} catch (Exception e) {
+			// Column exists.
+		}
+		
+		updateQuery = statement.getConnection().prepareStatement(
+				"UPDATE http_responses SET public_suffix=? WHERE id=? WHERE url is not null and url !='' ");
+		
+		rs = statement.executeQuery("SELECT id, url FROM http_responses");
+		while (rs.next()) {
+			String domain = "";
+			try {
+				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
+			} catch (Exception e) {
+				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				//e.printStackTrace();
+				continue;
+			}
+
+			updateQuery.clearParameters();
+			updateQuery.setString(1, domain);
+			updateQuery.setString(2, rs.getString("id"));
+			updateQuery.executeUpdate();
+		}
+		rs.close();
+		updateQuery.close();
+	}
+
+	private void createTopPages(Statement statement) throws Exception {
+		List<String> pageIds = new LinkedList<String>();
+		List<String> parentIds = new LinkedList<String>();
+		Map<String, String> topPages = new HashMap<String, String>();
+		
+
+		ResultSet rs = statement.executeQuery("SELECT id, parent_id FROM pages");
+		while (rs.next()) {
+			pageIds.add(rs.getString("id"));
+			parentIds.add(rs.getString("parent_id"));
+		}
+		rs.close();
+
+		String lastPage = "", lastParent = "";
+		for (String pageId : pageIds) {
+			lastPage = pageId;
+			lastParent = parentIds.get(pageIds.indexOf(pageId));
+			try {
+				//System.out.println(lastPage + "|" + lastParent + "|" + parentIds.get(pageIds.indexOf(lastParent)));
+				if (lastPage.equals(lastParent)) {
+					topPages.put(pageId, lastParent);
+				} else {
+					while(!lastPage.equals(lastParent)) {
+						//System.out.println(lastPage + "|" + lastParent);
+						lastPage = pageIds.get(pageIds.indexOf(lastParent));
+						lastParent = parentIds.get(pageIds.indexOf(lastParent));
+					}
+					topPages.put(pageId, lastParent);
+				}
+			} catch (Exception e) {}
+		}
+		
+		try {
+			statement.execute("ALTER TABLE pages ADD top_id INTEGER");
+		} catch (Exception e) {
+			// Columns exist.
+		}
+		
+		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
+				"UPDATE pages SET top_id=? WHERE id=?");
+		
+		for (String id : topPages.keySet()) {
+			updateQuery.clearParameters();
+			updateQuery.setString(1, topPages.get(id));
+			updateQuery.setString(2, id);
+			updateQuery.executeUpdate();
+		}
+		updateQuery.close();
+	}
 
 	private void createCleanedUpRedirectHosts(Statement statement) throws Exception {
 		try {
@@ -103,6 +243,8 @@ public class Analyzer {
 
 		Statement statement = conn.createStatement();
 
+		createPublicSuffix(statement);
+		createTopPages(statement);
 		createForwardHostColumnForLocalStorage(statement);
 		// Uncomment once new crawling run has been made
 		//createCleanedUpRedirectHosts(statement);
