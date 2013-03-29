@@ -20,7 +20,7 @@ public class Analyzer {
 	String path = System.getProperty("awby_path");
 
 	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
+	//Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
 	Map<String, Integer> setCookieResponses = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> cookiesAdded = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> cookiesDeleted = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
@@ -36,7 +36,10 @@ public class Analyzer {
 		} catch (Exception e) {
 			// Column exists.
 		}
-		
+
+		statement.getConnection().setAutoCommit(false);
+
+		int count = 0;
 		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
 				"UPDATE pages SET public_suffix=? WHERE id=?");
 		
@@ -51,12 +54,23 @@ public class Analyzer {
 				continue;
 			}
 
-			updateQuery.clearParameters();
 			updateQuery.setString(1, domain);
 			updateQuery.setString(2, rs.getString("id"));
-			updateQuery.executeUpdate();
+			updateQuery.addBatch();
+			
+			if (count % 1000 == 0) {
+				updateQuery.executeBatch();
+				
+				statement.getConnection().commit();
+
+				updateQuery.clearParameters();
+			}
+			count ++;
 		}
 		rs.close();
+		
+		updateQuery.executeBatch();
+		statement.getConnection().commit();
 		updateQuery.close();
 
 		try {
@@ -64,7 +78,8 @@ public class Analyzer {
 		} catch (Exception e) {
 			// Column exists.
 		}
-		
+		statement.getConnection().commit();
+		count = 0;
 		updateQuery = statement.getConnection().prepareStatement(
 				"UPDATE http_requests SET public_suffix=? WHERE id=?");
 		
@@ -79,25 +94,37 @@ public class Analyzer {
 				continue;
 			}
 
-			updateQuery.clearParameters();
 			updateQuery.setString(1, domain);
 			updateQuery.setString(2, rs.getString("id"));
-			updateQuery.executeUpdate();
+			updateQuery.addBatch();
+			
+			if (count % 1000 == 0) {
+				updateQuery.executeBatch();
+				
+				statement.getConnection().commit();
+
+				updateQuery.clearParameters();
+			}
+			count++;
 		}
 		rs.close();
-		updateQuery.close();
 		
+		updateQuery.executeBatch();
+		statement.getConnection().commit();
+		updateQuery.close();
 		
 		try {
 			statement.execute("ALTER TABLE http_responses ADD public_suffix TEXT");
 		} catch (Exception e) {
 			// Column exists.
 		}
-		
+		statement.getConnection().commit();
+		count = 0;
+
 		updateQuery = statement.getConnection().prepareStatement(
-				"UPDATE http_responses SET public_suffix=? WHERE id=? WHERE url is not null and url !='' ");
+				"UPDATE http_responses SET public_suffix=? WHERE id=? ");
 		
-		rs = statement.executeQuery("SELECT id, url FROM http_responses");
+		rs = statement.executeQuery("SELECT id, url FROM http_responses WHERE url is not null and url !=''");
 		while (rs.next()) {
 			String domain = "";
 			try {
@@ -108,13 +135,26 @@ public class Analyzer {
 				continue;
 			}
 
-			updateQuery.clearParameters();
 			updateQuery.setString(1, domain);
 			updateQuery.setString(2, rs.getString("id"));
-			updateQuery.executeUpdate();
+			updateQuery.addBatch();
+			
+			if (count % 1000 == 0) {
+				updateQuery.executeBatch();
+				
+				statement.getConnection().commit();
+
+				updateQuery.clearParameters();
+			}
+			count++;
 		}
 		rs.close();
+		updateQuery.executeBatch();
+		statement.getConnection().commit();
+
 		updateQuery.close();
+		
+		statement.getConnection().setAutoCommit(true);
 	}
 
 	private void createTopPages(Statement statement) throws Exception {
@@ -155,16 +195,28 @@ public class Analyzer {
 			// Columns exist.
 		}
 		
+		statement.getConnection().setAutoCommit(false);
+		int count = 0;
 		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
 				"UPDATE pages SET top_id=? WHERE id=?");
 		
 		for (String id : topPages.keySet()) {
-			updateQuery.clearParameters();
 			updateQuery.setString(1, topPages.get(id));
 			updateQuery.setString(2, id);
-			updateQuery.executeUpdate();
+			updateQuery.addBatch();
+			
+			if (count % 1000 == 0) {
+				updateQuery.executeBatch();
+				statement.getConnection().commit();
+			}
+			count++;
 		}
+		
+		updateQuery.executeBatch();
+		statement.getConnection().commit();
 		updateQuery.close();
+		
+		statement.getConnection().setAutoCommit(true);
 	}
 
 	private void createCleanedUpRedirectHosts(Statement statement) throws Exception {
@@ -243,14 +295,23 @@ public class Analyzer {
 
 		Statement statement = conn.createStatement();
 
+		System.out.println("Creating public suffixes");
 		createPublicSuffix(statement);
+		
+		System.out.println("Creating top ids");
 		createTopPages(statement);
+		
+		System.out.println("Creating hosts for local storage");
 		createForwardHostColumnForLocalStorage(statement);
 		// Uncomment once new crawling run has been made
 		//createCleanedUpRedirectHosts(statement);
 
 		// Request Count
-		ResultSet rs = statement.executeQuery("select * from http_requests where url is not null");
+		ResultSet rs = statement.executeQuery(
+				"select * from http_requests where page_id in " +
+				"(select id  from pages where id not in " +
+				"(select distinct(top_id) from pages where location != '' and public_suffix is not null and top_id is not null )" +
+				" and location != '' and public_suffix is not null and top_id is not null )");
 		while (rs.next()) {
 			String domain = "";
 			
@@ -277,6 +338,7 @@ public class Analyzer {
 		}
 		rs.close();
 		
+		/*
 		// Request count minus first parties
 		requestCountPerDomainMinusFirstParties = new LinkedHashMap<String, Integer>(requestCountPerDomain);
 
@@ -294,7 +356,8 @@ public class Analyzer {
 	        line = in.readLine();
 	    }
 	    in.close();
-		
+		*/
+
 		// Set cookie response counts
 		rs = statement.executeQuery(
 				"select hr.url, htr.name, htr.value from http_response_headers htr, http_responses hr " +
@@ -412,7 +475,8 @@ public class Analyzer {
 
 	public static void main(String[] args) {
 		try {
-			Analyzer ra = new Analyzer("fourthparty-baseline.sqlite");
+			//Analyzer ra = new Analyzer("fourthparty-baseline.sqlite");
+			Analyzer ra = new Analyzer("fourthparty-0.1/fourthparty-baseline.sqlite");
 			System.out.println(ra.totalContentLength);
 			System.out.println(ra.localStorageContents.size());
 		} catch (Exception e) {

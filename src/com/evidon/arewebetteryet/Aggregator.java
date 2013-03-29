@@ -47,9 +47,9 @@ public class Aggregator {
 			case "cookiesAdded":
 				mapToUse = ra.cookiesAdded;
 				break;
-			case "requestCountPerDomainMinusFirstParties":
-				mapToUse = ra.requestCountPerDomainMinusFirstParties;
-				break;
+//			case "requestCountPerDomainMinusFirstParties":
+//				mapToUse = ra.requestCountPerDomainMinusFirstParties;
+//				break;
 			case "requestCountPerDomain":
 				mapToUse = ra.requestCountPerDomain;
 				break;
@@ -173,7 +173,7 @@ public class Aggregator {
 		this.createContent(wb, s, "requestCountPerDomain");
 		sheet++;
 
-
+/*
 		// content: HTTP Requests minus First Parties
 		s = wb.createSheet();
 
@@ -181,7 +181,7 @@ public class Aggregator {
 		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix minus First Parties", 1);
 		this.createContent(wb, s, "requestCountPerDomainMinusFirstParties");
 		sheet++;
-		
+*/		
 		
 		// content: HTTP Set-Cookie Responses
 		s = wb.createSheet();
