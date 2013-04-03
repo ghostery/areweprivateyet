@@ -24,7 +24,7 @@ We currently test the following extensions in addition to baseline:
 - Ghostery
 - DoNotTrackMe
 - Adblock Plus with Fanboys list
-- AdblockPlus with EasyList
+- Adblock Plus with EasyList
 - TrackerBlock
 - RequestPolicy
 - Disconnect
@@ -37,5 +37,10 @@ through Selenium within crawler) and the extension that is being tested. You are
 the extension in the way that you want to test, meaning that if you just install ABP and have no lists, obviously
 the result would be different if it did contain EasyPrivacy or any other list.
 
+Note: You may add your own extensions by modifying the utilities array, or you may request that we add your extension for
+future testing by emailing me at felix@evidon.com. Please remember that baseline is always the first profile to be 
+executed.
+
 Executing the crawl
 ===================
+
