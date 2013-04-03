@@ -22,6 +22,9 @@ public class Aggregator {
 
 	Map<String, Analyzer> results = new LinkedHashMap<String, Analyzer>();
 	
+	// list of baseline domains.
+	List<String> domains = new ArrayList<String>();
+	
 	public Aggregator() { }
 	
 	public void addResults(String name, String dbFileName) {
@@ -47,9 +50,6 @@ public class Aggregator {
 			case "cookiesAdded":
 				mapToUse = ra.cookiesAdded;
 				break;
-//			case "requestCountPerDomainMinusFirstParties":
-//				mapToUse = ra.requestCountPerDomainMinusFirstParties;
-//				break;
 			case "requestCountPerDomain":
 				mapToUse = ra.requestCountPerDomain;
 				break;
@@ -60,19 +60,22 @@ public class Aggregator {
 	
 	private void createContent(Workbook wb, Sheet s, String map) {
 		Map<String, String> out = new HashMap<String, String>();
-		List<String> domains = new ArrayList<String>();
+		
 		int rownum = 2;
 		int cellnum = 0;
 
 		// create a merged list of domains.
+		domains.clear();
 		for (String database : results.keySet()) {
-			Analyzer ra = results.get(database);
-			Map<String, Integer> mapToUse = this.getMap(map, ra);
-	
-			for (String domain : mapToUse.keySet()) {
-				if (!domains.contains(domain)) {
-					domains.add(domain);
-					out.put(domain, "");
+			if (database.equals("baseline")) {
+				Analyzer ra = results.get(database);
+				Map<String, Integer> mapToUse = this.getMap(map, ra);
+
+				for (String domain : mapToUse.keySet()) {
+					if (!domains.contains(domain)) {
+						domains.add(domain);
+						out.put(domain, "");
+					}
 				}
 			}
 		}
@@ -88,7 +91,7 @@ public class Aggregator {
 			Cell c = r.createCell(cellnum);
 			c.setCellValue(domain);
 			cellnum++;
-							
+
 			for (String database : results.keySet()) {
 				Analyzer ra = results.get(database);
 
@@ -111,8 +114,71 @@ public class Aggregator {
 			}
 			rownum++;
 		}
+
+		
+		// Totals.
+		rownum++;
+		cellnum = 1;
+		Row r = s.createRow(rownum);
+		
+		Cell c = r.createCell(0);
+		c.setCellValue("Totals:");
+		
+		for (int i = 0; i < results.keySet().size(); i++) {
+			c = r.createCell(cellnum);
+			c.setCellType(Cell.CELL_TYPE_FORMULA);
+			c.setCellFormula("SUM(" + getCellLetter(i) + "3:" + getCellLetter(i) + (domains.size() + 2) + ")");
+			cellnum++;
+		}
+
+		// Delta/Reduction
+		rownum++;
+		cellnum = 1;
+		r = s.createRow(rownum);
+		
+		c = r.createCell(0);
+		c.setCellValue("Tracking Decrease:");
+		
+		for (int i = 0; i < results.keySet().size(); i++) {
+			c = r.createCell(cellnum);
+			c.setCellType(Cell.CELL_TYPE_FORMULA);
+			c.setCellFormula("ROUND((100-(" + getCellLetter(i) + (rownum) + "*100/B" + (rownum) + ")),0)");
+			cellnum++;
+		}
 	}
 	
+	private static String getCellLetter(int i) {
+		String letter = "";
+
+		if (i == 0) {
+			letter = "B";
+		} else if (i == 1) {
+			letter = "C";
+		} else if (i == 2) {
+			letter = "D";
+		} else if (i == 3) {
+			letter = "E";
+		} else if (i == 4) {
+			letter = "F";
+		} else if (i == 5) {
+			letter = "G";
+		} else if (i == 6) {
+			letter = "H";
+		} else if (i == 7) {
+			letter = "I";
+		} else if (i == 8) {
+			letter = "J";
+		} else if (i == 9) {
+			letter = "K";
+		} else if (i == 10) {
+			letter = "L";
+		} else if (i == 12) {
+			letter = "M";
+		}
+		
+		return letter;
+	}
+
 	private void createHeader(Workbook wb, Sheet s, String sheetTitle, int skipCell) {
 		int rownum = 0, cellnum = 0;
 		Row r = null;
@@ -172,16 +238,6 @@ public class Aggregator {
 		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix", 1);
 		this.createContent(wb, s, "requestCountPerDomain");
 		sheet++;
-
-/*
-		// content: HTTP Requests minus First Parties
-		s = wb.createSheet();
-
-		wb.setSheetName(sheet, "HTTP Requests minus First Parties");
-		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix minus First Parties", 1);
-		this.createContent(wb, s, "requestCountPerDomainMinusFirstParties");
-		sheet++;
-*/		
 		
 		// content: HTTP Set-Cookie Responses
 		s = wb.createSheet();

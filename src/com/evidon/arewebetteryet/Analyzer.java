@@ -1,14 +1,11 @@
 package com.evidon.arewebetteryet;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -337,31 +334,13 @@ public class Analyzer {
 			}
 		}
 		rs.close();
-		
-		/*
-		// Request count minus first parties
-		requestCountPerDomainMinusFirstParties = new LinkedHashMap<String, Integer>(requestCountPerDomain);
-
-		BufferedReader in = new BufferedReader(new FileReader(path + "top500.list"));
-	    String line = in.readLine();
-	    while (line != null) {
-	    	try {	    	
-	    		if (requestCountPerDomainMinusFirstParties.containsKey(line)) {
-	    			requestCountPerDomainMinusFirstParties.remove(line);
-	    		}
-	    	} catch (Exception e) {
-	    		e.printStackTrace();
-	    	}
-	    	
-	        line = in.readLine();
-	    }
-	    in.close();
-		*/
 
 		// Set cookie response counts
 		rs = statement.executeQuery(
-				"select hr.url, htr.name, htr.value from http_response_headers htr, http_responses hr " +
-				"where htr.name = 'Set-Cookie' and htr.http_response_id = hr.id and hr.url is not null");
+				"select hr.url, htr.name, htr.value from http_response_headers htr, http_responses hr where htr.name = 'Set-Cookie' " +
+				"and htr.http_response_id = hr.id and hr.url is not null and hr.page_id in (select id  from pages where id not in " +
+				"(select distinct(top_id) from pages where location != '' and public_suffix is not null and top_id is not null ) and " +
+				"location != '' and public_suffix is not null and top_id is not null )");
 		while(rs.next()) {
 			String domain = "";
 			
