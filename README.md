@@ -31,8 +31,8 @@ We currently test the following extensions in addition to baseline:
 - NoScript
 
 Firefox profiles need to be set up prior to running crawler from analysis utilities. The profiles need to be named
-as follows: "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect",
-"noscript". Each profile needs to contain fourthparty install (tho this could be force installed on the profile
+as follows: __"ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect",
+"noscript"__. Each profile needs to contain fourthparty install (tho this could be force installed on the profile
 through Selenium within crawler) and the extension that is being tested. You are also responsible for setting up
 the extension in the way that you want to test, meaning that if you just install ABP and have no lists, obviously
 the result would be different if it did contain EasyPrivacy or any other list.
@@ -40,6 +40,8 @@ the result would be different if it did contain EasyPrivacy or any other list.
 Note: You may add your own extensions by modifying the utilities array, or you may request that we add your extension for
 future testing by emailing me at felix@evidon.com. Please remember that baseline is always the first profile to be 
 executed.
+
+
 
 Executing the crawl
 ===================
