@@ -12,6 +12,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -21,6 +22,8 @@ public class Aggregator {
 	String path = System.getProperty("awby_path");
 
 	Map<String, Analyzer> results = new LinkedHashMap<String, Analyzer>();
+	Map<String, Map<String, String>> totals = new LinkedHashMap<String, Map<String, String>>();
+	Map<String, Map<String, String>> decrease = new LinkedHashMap<String, Map<String, String>>();
 	
 	// list of baseline domains.
 	List<String> domains = new ArrayList<String>();
@@ -80,8 +83,8 @@ public class Aggregator {
 			}
 		}
 
-		CellStyle cs = wb.createCellStyle();
-		cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("number"));
+		CellStyle numberStyle = wb.createCellStyle();
+		numberStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("number"));
 		s.setColumnWidth(0, 5000);
 
 		for (String domain : domains) {
@@ -108,7 +111,7 @@ public class Aggregator {
 					c.setCellValue(0);
 				}
 								
-				c.setCellStyle(cs);
+				c.setCellStyle(numberStyle);
 						
 				cellnum++;
 			}
@@ -128,6 +131,22 @@ public class Aggregator {
 			c = r.createCell(cellnum);
 			c.setCellType(Cell.CELL_TYPE_FORMULA);
 			c.setCellFormula("SUM(" + getCellLetter(i) + "3:" + getCellLetter(i) + (domains.size() + 2) + ")");
+			
+			FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+			evaluator.evaluateFormulaCell(c);
+
+			if (!totals.containsKey(s.getRow(1).getCell(i + 1).getStringCellValue())) {
+				Map<String, String> contents = new LinkedHashMap<String, String>();
+				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				
+				totals.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
+			} else {
+				Map<String, String> contents = totals.get(s.getRow(1).getCell(i + 1).getStringCellValue());
+				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				
+				totals.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
+			}
+			
 			cellnum++;
 		}
 
@@ -143,6 +162,22 @@ public class Aggregator {
 			c = r.createCell(cellnum);
 			c.setCellType(Cell.CELL_TYPE_FORMULA);
 			c.setCellFormula("ROUND((100-(" + getCellLetter(i) + (rownum) + "*100/B" + (rownum) + ")),0)");
+			
+			FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+			evaluator.evaluateFormulaCell(c);
+
+			if (!decrease.containsKey(s.getRow(1).getCell(i + 1).getStringCellValue())) {
+				Map<String, String> contents = new LinkedHashMap<String, String>();
+				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				
+				decrease.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
+			} else {
+				Map<String, String> contents = decrease.get(s.getRow(1).getCell(i + 1).getStringCellValue());
+				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				
+				decrease.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
+			}
+			
 			cellnum++;
 		}
 	}
@@ -174,6 +209,10 @@ public class Aggregator {
 			letter = "L";
 		} else if (i == 12) {
 			letter = "M";
+		} else if (i == 13) {
+			letter = "N";
+		} else if (i == 14) {
+			letter = "O";
 		}
 		
 		return letter;
@@ -263,6 +302,73 @@ public class Aggregator {
 		sheet++;
 		
 		
+		// content: Pretty Chart
+		s = wb.createSheet();
+		wb.setSheetName(sheet, "Overall");
+		
+		int rownum = 0, cellnum = 0;
+
+		// Header
+		r = s.createRow(rownum);
+		Cell c = r.createCell(0);
+		s.setColumnWidth(0, 8000);
+		c.setCellValue("Overall effectiveness measured by percentage of decrease vs baseline");
+		
+		rownum++;
+		r = s.createRow(rownum);
+
+		cellnum++;
+
+		for (String database : decrease.keySet()) {
+			if (database.equals("baseline")) {
+				continue;
+			}
+			
+			c = r.createCell(cellnum);
+			c.setCellValue(database);
+			
+			CellStyle cs = wb.createCellStyle();
+			Font f = wb.createFont();
+			f.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			cs.setFont(f);
+
+			c.setCellStyle(cs);
+			cellnum++;
+		}
+		
+		CellStyle numberStyle = wb.createCellStyle();
+		numberStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("number"));
+
+		// Content
+		for (String type : decrease.get("baseline").keySet()) {
+			cellnum = 0;
+			rownum++;
+			
+			r = s.createRow(rownum);
+			
+			c = r.createCell(cellnum);
+			c.setCellValue(type);
+			cellnum++;
+			
+			for (String database : decrease.keySet()) {
+				if (database.equals("baseline")) {
+					continue;
+				}
+
+				c = r.createCell(cellnum);
+				c.setCellStyle(numberStyle);
+				c.setCellValue(Double.parseDouble(decrease.get(database).get(type)));
+				cellnum++;
+			}
+		}
+		/*
+		for (String database : decrease.keySet()) {
+			for (String type : decrease.get(database).keySet()) {
+				System.out.println(database + "|" + type + "|" + decrease.get(database).get(type));
+			}
+		}
+		*/
+		
 		wb.write(file);
 		file.close();
 	}
@@ -273,7 +379,7 @@ public class Aggregator {
 	public static void main(String[] args) {
 		Aggregator agg = new Aggregator();
 
-		String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect", "noscript"};
+		String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "noscript", "cookies-blocked"};
 		//String[] profiles = {"baseline", "ghostery"};
 		for (String profile : profiles) {
 			agg.addResults(profile, "fourthparty-" + profile + ".sqlite");	
