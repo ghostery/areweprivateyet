@@ -74,9 +74,18 @@ public class Crawler {
 				// new WebDriverWait(driver, 5 * 1000);
 			} catch (TimeoutException te) {
 				System.out.println("Timed out, skipping.");
+			} catch (org.openqa.selenium.UnhandledAlertException me) {
+				System.out.println("Modal excpetion caused by previous site?");
+
+				// Retry current site.
+				try {
+					driver.get("http://" + url);
+				} catch (TimeoutException te) {
+					System.out.println("Timed out, skipping.");
+				}
 			}
 
-			try { Thread.sleep(10 * 1000); } catch (InterruptedException e) { }
+			try { Thread.sleep(7 * 1000); } catch (InterruptedException e) { }
 		}
 
 		// navigating to the trip site for local storage copy.
@@ -102,7 +111,7 @@ public class Crawler {
 		 	- flash cookies
 		 */
 		try {
-			String[] profiles = {"baseline", "ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect", "noscript"};
+			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "noscript", "cookies-blocked"};
 			for (String profile : profiles) {
 				new Crawler(profile);
 			}
