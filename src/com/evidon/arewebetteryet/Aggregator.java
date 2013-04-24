@@ -1,6 +1,8 @@
 package com.evidon.arewebetteryet;
 
+import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,6 +18,8 @@ import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Aggregator {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
@@ -251,6 +255,44 @@ public class Aggregator {
 		}
 	}
 
+	private void createJson() throws Exception {
+		JSONObject json = new JSONObject();
+		json.put("date", System.currentTimeMillis());
+		JSONArray jsonArray = new JSONArray();
+		
+		for (String database : results.keySet()) {
+			jsonArray.put(database);
+		}
+		
+		json.put("dataset", jsonArray);
+		
+		JSONObject jsonTotals = new JSONObject();
+		for (String database : totals.keySet()) {
+			JSONObject jsonTypes = new JSONObject();
+			for (String type : totals.get(database).keySet()) {
+				jsonTypes.put(type, Double.parseDouble(totals.get(database).get(type)));
+			}
+			jsonTotals.put(database, jsonTypes);
+		}
+		
+		json.put("totals", jsonTotals);
+		
+		jsonTotals = new JSONObject();
+		for (String database : decrease.keySet()) {
+			JSONObject jsonTypes = new JSONObject();
+			for (String type : decrease.get(database).keySet()) {
+				jsonTypes.put(type, Double.parseDouble(decrease.get(database).get(type)));
+			}
+			jsonTotals.put(database, jsonTypes);
+		}
+		
+		json.put("decrease", jsonTotals);
+		
+		BufferedWriter bw = new BufferedWriter(new FileWriter(path + "json"));
+		bw.write(json.toString());
+		bw.close();
+	}
+
 	public void createSpreadSheet() throws Exception {
 		int row = 2, cell = 0, sheet = 0;
 		FileOutputStream file = new FileOutputStream(path + "analysis.xls");
@@ -277,7 +319,8 @@ public class Aggregator {
 		this.createHeader(wb, s, "Pages with One or More HTTP Requests to the Public Suffix", 1);
 		this.createContent(wb, s, "requestCountPerDomain");
 		sheet++;
-		
+
+
 		// content: HTTP Set-Cookie Responses
 		s = wb.createSheet();
 		wb.setSheetName(sheet, "HTTP Set-Cookie Responses");
@@ -300,7 +343,7 @@ public class Aggregator {
 		this.createHeader(wb, s, "Local Storage counts per domain", 1);
 		this.createContent(wb, s, "localStorageContents");
 		sheet++;
-		
+
 		
 		// content: Pretty Chart
 		s = wb.createSheet();
@@ -361,6 +404,7 @@ public class Aggregator {
 				cellnum++;
 			}
 		}
+
 		/*
 		for (String database : decrease.keySet()) {
 			for (String type : decrease.get(database).keySet()) {
@@ -371,6 +415,10 @@ public class Aggregator {
 		
 		wb.write(file);
 		file.close();
+		
+		
+		// Create JSON output object
+		createJson();
 	}
 
 	/**
@@ -392,5 +440,4 @@ public class Aggregator {
 			e.printStackTrace();
 		}
 	}
-
 }
