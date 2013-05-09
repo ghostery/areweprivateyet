@@ -85,7 +85,7 @@ public class Crawler {
 				}
 			}
 
-			try { Thread.sleep(7 * 1000); } catch (InterruptedException e) { }
+			try { Thread.sleep(10 * 1000); } catch (InterruptedException e) { }
 		}
 
 		// navigating to the trip site for local storage copy.
