@@ -10,12 +10,14 @@ import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
 public class Crawler {
 	// VM prop -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
 	String path = System.getProperty("awby_path");
 	ArrayList<String> urls = new ArrayList<String>();
+	StringBuilder out = new StringBuilder();
 	
 	private void loadSiteList() throws Exception {
 		BufferedReader in = new BufferedReader(new FileReader(path + "top500.list"));
@@ -28,7 +30,8 @@ public class Crawler {
 	}
 
 	private String getDriverProfile() {
-		File sysTemp = new File(System.getProperty("java.io.tmpdir"));
+		// C:\Users\ADMINI~1\AppData\Local\Temp\2\
+		File sysTemp = new File(System.getProperty("java.io.tmpdir"));		
 		File pd = null;
 		long prevTime = 0;
 
@@ -50,11 +53,43 @@ public class Crawler {
 		return pd.toString();
 	}
 
+	private void log(String s) {
+		out.append(s + "\n");
+		System.out.println(s);
+	}
+
+	private void handleTimeout(String baseWindow, String url, WebDriver driver) {
+		log("Timed out loading " + url + ", skipping.");
+		killPopups(baseWindow, driver);
+	}
+	
+	private void killPopups(String baseWindow, WebDriver driver) {
+		// close any new popups.
+		for (String handle : driver.getWindowHandles()) {
+			if (!handle.equals(baseWindow)) {
+				WebDriver popup = driver.switchTo().window(handle);
+				log("Closing popup: " + popup.getCurrentUrl());
+				popup.close();
+
+				// TODO: need to see if this breaks when there is a modal.
+			}
+		}
+
+		driver.switchTo().window(baseWindow);
+	}
+
 	public Crawler(String namedProfile) throws Exception {
+		// http://spectrum.pch.com/Path/2013MayTVPC1CTLREG/TFULLREG2.aspx?tid=4ed4ac63-6490-4063-aecc-38655a133a64
 		loadSiteList();
-		
-		ProfilesIni profile = new ProfilesIni();
-		WebDriver driver = new FirefoxDriver(profile.getProfile(namedProfile));
+
+		int sleepTime = (namedProfile.equals("baseline") ? 10 : 5);
+		boolean started = false;
+		String baseWindow = "";
+
+		FirefoxProfile profile = new ProfilesIni().getProfile(namedProfile);
+		//profile.setPreference("webdriver.load.strategy", "fast");
+
+		WebDriver driver = new FirefoxDriver(profile);
 
 		driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
 		driver.manage().timeouts().pageLoadTimeout(40, TimeUnit.SECONDS);
@@ -62,30 +97,50 @@ public class Crawler {
 
 		// figure out where the fucking profile is. wow!
 		String profileDir = getDriverProfile();
-
-        System.out.println("Crawling started.");
+		
+        log("Crawling started for " + namedProfile);
  	
 		for (String url : urls) {
-			System.out.println("navigating to: " + url);
+			if (!started) {
+				// Original window handle to be used as base. Used so we can close all other popups.  
+				baseWindow = driver.getWindowHandle();
+				started = true;
+			}
 
+			log("navigating to: " + url);
+
+			CrawlusInterruptus ci = new CrawlusInterruptus(60);
 			try {
-				driver.get("http://" + url);
+				ci.start();
+
+				try {
+					// Confirm handling for one of those super fucking annoying "Are you sure you wonna go anywhere else?"
+					driver.switchTo().alert().accept();
+					log("Accepted a navigate away modal");
+				} catch (Exception e) { }
+				
+				driver.get("http://" + url);				
+				
 				// WTF, why would their own fucking wait not work?!?
 				// new WebDriverWait(driver, 5 * 1000);
 			} catch (TimeoutException te) {
-				System.out.println("Timed out, skipping.");
+				handleTimeout(baseWindow, url, driver);
 			} catch (org.openqa.selenium.UnhandledAlertException me) {
-				System.out.println("Modal excpetion caused by previous site?");
+				log("Modal exception caused by previous site?");
 
 				// Retry current site.
 				try {
 					driver.get("http://" + url);
 				} catch (TimeoutException te) {
-					System.out.println("Timed out, skipping.");
+					handleTimeout(baseWindow, url, driver);
 				}
+			} finally {
+				ci.interrupt();
 			}
 
-			try { Thread.sleep(10 * 1000); } catch (InterruptedException e) { }
+			try { Thread.sleep(sleepTime * 1000); } catch (InterruptedException e) { }
+
+			killPopups(baseWindow, driver);
 		}
 
 		// navigating to the trip site for local storage copy.
@@ -96,12 +151,12 @@ public class Crawler {
 		FileUtils.copyFile(new File(profileDir + "/fourthparty.sqlite"), new File(path + "/fourthparty-" + namedProfile + ".sqlite"));
 
 		driver.quit();
-		System.out.println("Crawling completed.");
+		log("Crawling completed for " + namedProfile);
 	}
 
 	public static void main(String args[]) {
 		/*
-		FourthParty collect info. Implemented:
+		FourthParty implemented:
 		 	- cookies
 		 	- requests
 		 	- redirects
