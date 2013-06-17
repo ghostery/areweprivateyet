@@ -48,6 +48,10 @@ public class AnalysisUtils {
 		if (url.indexOf("_") > 0) {
 			url = url.replaceAll("_", "");
 		}
+
+		if (url.indexOf("%") > 0) {
+			url = url.replaceAll("%", "");
+		}
 		
 		// strip port
 		if (url.indexOf(":8080") > 0) {

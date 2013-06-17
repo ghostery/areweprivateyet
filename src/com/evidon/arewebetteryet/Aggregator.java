@@ -1,7 +1,9 @@
 package com.evidon.arewebetteryet;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +34,23 @@ public class Aggregator {
 	// list of baseline domains.
 	List<String> domains = new ArrayList<String>();
 	
-	public Aggregator() { }
+	// list of suspected cdns and first parties for exclusion
+	List<String> exclusions = new ArrayList<String>();
+	
+	public Aggregator() {
+		// load exclusions
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(path + "exclusions.list"));
+			String line = in.readLine();
+			while (line != null) {
+				exclusions.add(line);
+				line = in.readLine();
+			}
+			in.close();
+		} catch (Exception e) {
+			// exclusions are missing or unreadable
+		}
+	}
 	
 	public void addResults(String name, String dbFileName) {
 		try {
@@ -54,8 +72,8 @@ public class Aggregator {
 			case "cookieTotals":
 				mapToUse = ra.cookieTotals;
 				break;
-			case "cookiesAdded":
-				mapToUse = ra.cookiesAdded;
+			case "setCookieResponses":
+				mapToUse = ra.setCookieResponses;
 				break;
 			case "requestCountPerDomain":
 				mapToUse = ra.requestCountPerDomain;
@@ -79,7 +97,7 @@ public class Aggregator {
 				Map<String, Integer> mapToUse = this.getMap(map, ra);
 
 				for (String domain : mapToUse.keySet()) {
-					if (!domains.contains(domain)) {
+					if ( (!domains.contains(domain)) && !exclusions.contains(domain) ) {
 						domains.add(domain);
 						out.put(domain, "");
 					}
@@ -310,8 +328,34 @@ public class Aggregator {
 			c.setCellValue(results.get(database).totalContentLength / 1024 / 1024);
 			cell ++;
 		}
-		sheet++;
+		
+		row++;
+		cell = 0;
+		r = s.createRow(row);
 
+		for (String database : results.keySet()) {
+			Cell c = r.createCell(cell);
+			if (database.equals("baseline")) {
+				c.setCellValue("Decrease:");
+
+				Map<String, String> contents = new LinkedHashMap<String, String>();
+				contents.put(s.getSheetName(), "0");
+				decrease.put(database, contents);
+			} else {
+				c = r.createCell(cell);
+				c.setCellType(Cell.CELL_TYPE_FORMULA);
+				c.setCellFormula("ROUND((100-(" + getCellLetter(cell - 1) + "3*100/A3)),0)");
+				
+				FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+				evaluator.evaluateFormulaCell(c);
+				
+				Map<String, String> contents = new LinkedHashMap<String, String>();
+				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				decrease.put(database, contents);
+			}
+			cell ++;
+		}
+		sheet++;
 
 		// content: HTTP Requests
 		s = wb.createSheet();
@@ -325,7 +369,7 @@ public class Aggregator {
 		s = wb.createSheet();
 		wb.setSheetName(sheet, "HTTP Set-Cookie Responses");
 		this.createHeader(wb, s, "Pages with One or More HTTP Responses from the Public Suffix That Include a Set-Cookie Header", 1);
-		this.createContent(wb, s, "cookiesAdded");
+		this.createContent(wb, s, "setCookieResponses");
 		sheet++;
 
 		

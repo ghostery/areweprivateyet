@@ -1,8 +1,11 @@
 package com.evidon.arewebetteryet;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +22,12 @@ public class Crawler {
 	ArrayList<String> urls = new ArrayList<String>();
 	StringBuilder out = new StringBuilder();
 	
+	private void recordLog(String name) throws IOException {
+		BufferedWriter out = new BufferedWriter(new FileWriter(path + "crawl-" + name + ".log"));
+		out.write(out.toString());
+		out.close();
+	}
+
 	private void loadSiteList() throws Exception {
 		BufferedReader in = new BufferedReader(new FileReader(path + "top500.list"));
 	    String line = in.readLine();
@@ -152,6 +161,8 @@ public class Crawler {
 
 		driver.quit();
 		log("Crawling completed for " + namedProfile);
+		
+		recordLog(namedProfile);
 	}
 
 	public static void main(String args[]) {

@@ -301,7 +301,7 @@ public class Analyzer {
 		System.out.println("Creating hosts for local storage");
 		createForwardHostColumnForLocalStorage(statement);
 		// Uncomment once new crawling run has been made
-		//createCleanedUpRedirectHosts(statement);
+		// createCleanedUpRedirectHosts(statement);
 
 		// Request Count
 		ResultSet rs = statement.executeQuery(
@@ -503,16 +503,5 @@ public class Analyzer {
 		rs.close();
 		
 		conn.close();
-	}
-
-	public static void main(String[] args) {
-		try {
-			//Analyzer ra = new Analyzer("fourthparty-baseline.sqlite");
-			Analyzer ra = new Analyzer("fourthparty-0.1/fourthparty-baseline.sqlite");
-			System.out.println(ra.totalContentLength);
-			System.out.println(ra.localStorageContents.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }
