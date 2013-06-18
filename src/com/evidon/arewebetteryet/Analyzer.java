@@ -86,7 +86,7 @@ public class Analyzer {
 			try {
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
 			} catch (Exception e) {
-				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				System.out.println("\tCant parse this domain: " + rs.getString("url"));
 				//e.printStackTrace();
 				continue;
 			}
@@ -127,7 +127,7 @@ public class Analyzer {
 			try {
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
 			} catch (Exception e) {
-				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				System.out.println("\tCant parse this domain: " + rs.getString("url"));
 				//e.printStackTrace();
 				continue;
 			}
@@ -292,13 +292,13 @@ public class Analyzer {
 
 		Statement statement = conn.createStatement();
 
-		System.out.println("Creating public suffixes");
+		System.out.println("\tCreating public suffixes");
 		createPublicSuffix(statement);
 		
-		System.out.println("Creating top ids");
+		System.out.println("\tCreating top ids");
 		createTopPages(statement);
 		
-		System.out.println("Creating hosts for local storage");
+		System.out.println("\tCreating hosts for local storage");
 		createForwardHostColumnForLocalStorage(statement);
 		// Uncomment once new crawling run has been made
 		// createCleanedUpRedirectHosts(statement);
@@ -328,7 +328,7 @@ public class Analyzer {
 			try {
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
 			} catch (Exception e) {
-				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				System.out.println("\tCant parse this domain: " + rs.getString("url"));
 				//e.printStackTrace();
 				continue;
 			}
@@ -400,7 +400,7 @@ public class Analyzer {
 			try {
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
 			} catch (Exception e) {
-				System.out.println("Cant parse this domain: " + rs.getString("url"));
+				System.out.println("\tCant parse this domain: " + rs.getString("url"));
 				//e.printStackTrace();
 				continue;
 			}

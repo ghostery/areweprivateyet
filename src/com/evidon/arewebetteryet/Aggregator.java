@@ -399,7 +399,7 @@ public class Aggregator {
 		r = s.createRow(rownum);
 		Cell c = r.createCell(0);
 		s.setColumnWidth(0, 8000);
-		c.setCellValue("Overall effectiveness measured by percentage of decrease vs baseline");
+		c.setCellValue("Overall effectiveness measured by percentage of decrease vs baseline (0 for any negative effect)");
 		
 		rownum++;
 		r = s.createRow(rownum);
@@ -444,7 +444,13 @@ public class Aggregator {
 
 				c = r.createCell(cellnum);
 				c.setCellStyle(numberStyle);
-				c.setCellValue(Double.parseDouble(decrease.get(database).get(type)));
+				
+				double decreaseValue = Double.parseDouble(decrease.get(database).get(type));
+				
+				if (decreaseValue < 0) 
+					decreaseValue = 0;
+
+				c.setCellValue(decreaseValue);
 				cellnum++;
 			}
 		}
