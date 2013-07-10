@@ -1,4 +1,4 @@
-arewebetteryet - WIP name
+areweprivateyet - WIP name
 -------------------------
 
 This project is dedicated to automated recreation of Stanford's CIS "Tracking the Trackers Self Help Tools" study.
