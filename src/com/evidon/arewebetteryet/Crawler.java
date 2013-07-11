@@ -68,7 +68,7 @@ public class Crawler {
 	}
 
 	private void handleTimeout(String baseWindow, String url, WebDriver driver) {
-		log("Timed out loading " + url + ", skipping.");
+		log("\tTimed out loading " + url + ", skipping.");
 		killPopups(baseWindow, driver);
 	}
 	
@@ -77,7 +77,7 @@ public class Crawler {
 		for (String handle : driver.getWindowHandles()) {
 			if (!handle.equals(baseWindow)) {
 				WebDriver popup = driver.switchTo().window(handle);
-				log("Closing popup: " + popup.getCurrentUrl());
+				log("\tClosing popup: " + popup.getCurrentUrl());
 				popup.close();
 
 				// TODO: need to see if this breaks when there is a modal.
@@ -88,7 +88,6 @@ public class Crawler {
 	}
 
 	public Crawler(String namedProfile) throws Exception {
-		// http://spectrum.pch.com/Path/2013MayTVPC1CTLREG/TFULLREG2.aspx?tid=4ed4ac63-6490-4063-aecc-38655a133a64
 		loadSiteList();
 
 		int sleepTime = (namedProfile.equals("baseline") ? 10 : 5);
@@ -109,6 +108,7 @@ public class Crawler {
 		
         log("Crawling started for " + namedProfile);
  	
+        int count = 0;
 		for (String url : urls) {
 			if (!started) {
 				// Original window handle to be used as base. Used so we can close all other popups.  
@@ -116,7 +116,8 @@ public class Crawler {
 				started = true;
 			}
 
-			log("navigating to: " + url);
+			count++;
+			log("\t" + count + ". navigating to: " + url);
 
 			CrawlusInterruptus ci = new CrawlusInterruptus(60);
 			try {
@@ -125,7 +126,7 @@ public class Crawler {
 				try {
 					// Confirm handling for one of those super fucking annoying "Are you sure you wonna go anywhere else?"
 					driver.switchTo().alert().accept();
-					log("Accepted a navigate away modal");
+					log("\tAccepted a navigate away modal");
 				} catch (Exception e) { }
 				
 				driver.get("http://" + url);				
@@ -135,7 +136,7 @@ public class Crawler {
 			} catch (TimeoutException te) {
 				handleTimeout(baseWindow, url, driver);
 			} catch (org.openqa.selenium.UnhandledAlertException me) {
-				log("Modal exception caused by previous site?");
+				log("\tModal exception caused by previous site?");
 
 				// Retry current site.
 				try {
@@ -177,7 +178,7 @@ public class Crawler {
 		 	- flash cookies
 		 */
 		try {
-			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "noscript", "cookies-blocked"};
+			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", /*"requestpolicy", "noscript",*/ "cookies-blocked"};
 			for (String profile : profiles) {
 				new Crawler(profile);
 			}

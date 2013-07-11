@@ -273,6 +273,47 @@ public class Aggregator {
 		}
 	}
 
+	private void createTSV() throws Exception {
+		// TSV only contains decreases numbers for the graph.
+		StringBuilder top = new StringBuilder(),
+				content = new StringBuilder();
+
+		top.append("Points");
+
+		// header
+		for (String database : decrease.keySet()) {
+			for (String type : decrease.get(database).keySet()) {
+				top.append(",");
+				top.append(type);
+			}
+
+			break;
+		}
+
+		// content
+		for (String database : decrease.keySet()) {
+			if (database.equals("baseline")) {
+				continue;
+			}
+
+			content.append(database);
+
+			for (String type : decrease.get(database).keySet()) {
+				content.append(",");
+				Double d = Double.parseDouble(decrease.get(database).get(type));
+				content.append( (d.intValue() >= 0) ? d.intValue() : "0"  );
+			}
+
+			content.append("\n");
+		}
+
+		String o = top.toString();
+		o += "\n" + content.toString();
+		BufferedWriter bw = new BufferedWriter(new FileWriter(path + "tsv"));
+		bw.write(o);
+		bw.close();
+	}
+	
 	private void createJson() throws Exception {
 		JSONObject json = new JSONObject();
 		json.put("date", System.currentTimeMillis());
@@ -465,26 +506,31 @@ public class Aggregator {
 		
 		wb.write(file);
 		file.close();
-		
-		
-		// Create JSON output object
-		createJson();
 	}
 
-	/**
-	 * @param args
-	 */
+	public void output() throws Exception {
+		createSpreadSheet();
+
+		// Create JSON output object
+		createJson();
+
+		// Create TSV in the d3 format
+		createTSV();
+	}
+	
+
+	
 	public static void main(String[] args) {
 		Aggregator agg = new Aggregator();
 
-		String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "noscript", "cookies-blocked"};
+		String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", /*"requestpolicy", "noscript",*/ "cookies-blocked"};
 		//String[] profiles = {"baseline", "ghostery"};
 		for (String profile : profiles) {
 			agg.addResults(profile, "fourthparty-" + profile + ".sqlite");	
 		}
 		
 		try {
-			agg.createSpreadSheet();
+			agg.output();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
