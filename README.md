@@ -79,3 +79,31 @@ java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.j
 
 Using the databases in the input folder, Aggregator collects results and outputs a final file named analysis.xls.
 This should be a copy of the aforementioned study.
+
+
+License
+======= 
+AreWePrivateYet uses Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
+
+License information is stored in LICENSE.txt
+
+
+How to file an issue
+====================
+You may file an issue using GitHub's own issue tracker: https://github.com/ghostery/areweprivateyet/issues
+
+
+How to submit a fix/pull-request
+================================
+You may fork the project and modify at will. your changes may be submitted back to us via a GitHub's pull
+request. Your changes are subject to review and CLA agreement.
+
+
+How to sign CLA
+===============
+Evidon requires a CLA agreement to be signed before any code may be accepted. The CLAs and submission
+information could be viewed and signed here:
+
+Individual - https://staging-cla.evidon.com/individual
+
+Corporate - https://staging-cla.evidon.com/corporate
