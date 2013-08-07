@@ -104,6 +104,6 @@ How to sign CLA
 Evidon requires a CLA agreement to be signed before any code may be accepted. The CLAs and submission
 information could be viewed and signed here:
 
-Individual - https://staging-cla.evidon.com/individual
+Individual - https://cla.evidon.com/individual
 
-Corporate - https://staging-cla.evidon.com/corporate
+Corporate - https://cla.evidon.com/corporate
