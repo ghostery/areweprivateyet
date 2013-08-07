@@ -41,7 +41,7 @@ the extension in the way that you want to test, meaning that if you just install
 the result would be different if it did contain EasyPrivacy or any other list.
 
 Note: You may add your own extensions by modifying the utilities array, or you may request that we add your extension for
-future testing by emailing me at <felix@evidon.com>. Please remember that baseline is always the first profile to be 
+future testing by emailing me at <areweprivateyet@ghostery.com>. Please remember that baseline is always the first profile to be 
 executed.
 
 
