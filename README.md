@@ -1,4 +1,4 @@
-areweprivateyet - WIP name
+areweprivateyet
 -------------------------
 
 This project is dedicated to automated recreation of Stanford's CIS "Tracking the Trackers Self Help Tools" study.
@@ -15,6 +15,10 @@ as a base is actually a separate anonymous profile for Firefox, and as such, the
 copy the fourthparty sqlite database into a path defined at run time.
 
 All required libraries for the test are stored in lib directory.
+
+Results
+=======
+Results of several month worth of crawling is available for view on dedicated website: http://www.areweprivateyet.com/
 
 
 Setup
@@ -53,7 +57,7 @@ simply run Crawler class.  Alternatively, you may use the build provided and run
 java:
 
 ```
-java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.jar:lib/cglib-nodep-2.1_3.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-exec-1.1.jar:lib/commons-io-2.2.jar:lib/commons-jxpath-1.3.jar:lib/commons-lang3-3.1.jar:lib/commons-logging-1.1.1.jar:lib/cssparser-0.9.8.jar:lib/dom4j-1.6.1.jar:lib/guava-14.0.jar:lib/hamcrest-core-1.3.jar:lib/hamcrest-library-1.3.jar:lib/htmlunit-2.11.jar:lib/htmlunit-core-js-2.11.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/httpmime-4.2.1.jar:lib/ini4j-0.5.2.jar:lib/jcommander-1.29.jar:lib/jetty-websocket-8.1.8.jar:lib/jna-3.4.0.jar:lib/jna-platform-3.4.0.jar:lib/json-20080701.jar:lib/junit-dep-4.11.jar:lib/log4j-1.2.13.jar:lib/nekohtml-1.9.17.jar:lib/netty-3.5.7.Final.jar:lib/operadriver-1.2.jar:lib/phantomjsdriver-1.0.1.jar:lib/poi-3.9-20121203.jar:lib/protobuf-java-2.4.1.jar:lib/sac-1.3.jar:lib/selenium-java-2.31.0.jar:lib/serializer-2.7.1.jar:lib/sqlite-jdbc-3.7.2.jar:lib/stax-api-1.0.1.jar:lib/testng-6.8.jar:lib/xalan-2.7.1.jar:lib/xercesImpl-2.10.0.jar:lib/xml-apis-1.4.01.jar:lib/xmlbeans-2.3.0.jar:."  com.evidon.arewebetteryet.Crawler
+java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.jar:lib/cglib-nodep-2.1_3.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-exec-1.1.jar:lib/commons-io-2.2.jar:lib/commons-jxpath-1.3.jar:lib/commons-lang3-3.1.jar:lib/commons-logging-1.1.1.jar:lib/cssparser-0.9.8.jar:lib/dom4j-1.6.1.jar:lib/guava-14.0.jar:lib/hamcrest-core-1.3.jar:lib/hamcrest-library-1.3.jar:lib/htmlunit-2.11.jar:lib/htmlunit-core-js-2.11.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/httpmime-4.2.1.jar:lib/ini4j-0.5.2.jar:lib/jcommander-1.29.jar:lib/jetty-websocket-8.1.8.jar:lib/jna-3.4.0.jar:lib/jna-platform-3.4.0.jar:lib/json-20080701.jar:lib/junit-dep-4.11.jar:lib/log4j-1.2.13.jar:lib/nekohtml-1.9.17.jar:lib/netty-3.5.7.Final.jar:lib/operadriver-1.2.jar:lib/phantomjsdriver-1.0.1.jar:lib/poi-3.9-20121203.jar:lib/protobuf-java-2.4.1.jar:lib/sac-1.3.jar:lib/selenium-java-2.31.0.jar:lib/serializer-2.7.1.jar:lib/sqlite-jdbc-3.7.2.jar:lib/stax-api-1.0.1.jar:lib/testng-6.8.jar:lib/xalan-2.7.1.jar:lib/xercesImpl-2.10.0.jar:lib/xml-apis-1.4.01.jar:lib/xmlbeans-2.3.0.jar:."  com.evidon.areweprivateyet.Crawler
 ```
 
 awby_path is the local setting for location of the top500.list file as well as the input and output folder that will 
@@ -75,7 +79,7 @@ readable Excel spreadsheet as well as, produce output in JSON. To run, either ex
 following command:
 
 ```
-java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.jar:lib/cglib-nodep-2.1_3.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-exec-1.1.jar:lib/commons-io-2.2.jar:lib/commons-jxpath-1.3.jar:lib/commons-lang3-3.1.jar:lib/commons-logging-1.1.1.jar:lib/cssparser-0.9.8.jar:lib/dom4j-1.6.1.jar:lib/guava-14.0.jar:lib/hamcrest-core-1.3.jar:lib/hamcrest-library-1.3.jar:lib/htmlunit-2.11.jar:lib/htmlunit-core-js-2.11.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/httpmime-4.2.1.jar:lib/ini4j-0.5.2.jar:lib/jcommander-1.29.jar:lib/jetty-websocket-8.1.8.jar:lib/jna-3.4.0.jar:lib/jna-platform-3.4.0.jar:lib/json-20080701.jar:lib/junit-dep-4.11.jar:lib/log4j-1.2.13.jar:lib/nekohtml-1.9.17.jar:lib/netty-3.5.7.Final.jar:lib/operadriver-1.2.jar:lib/phantomjsdriver-1.0.1.jar:lib/poi-3.9-20121203.jar:lib/protobuf-java-2.4.1.jar:lib/sac-1.3.jar:lib/selenium-java-2.31.0.jar:lib/serializer-2.7.1.jar:lib/sqlite-jdbc-3.7.2.jar:lib/stax-api-1.0.1.jar:lib/testng-6.8.jar:lib/xalan-2.7.1.jar:lib/xercesImpl-2.10.0.jar:lib/xml-apis-1.4.01.jar:lib/xmlbeans-2.3.0.jar:."  com.evidon.arewebetteryet.Aggregator
+java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.jar:lib/cglib-nodep-2.1_3.jar:lib/commons-codec-1.6.jar:lib/commons-collections-3.2.1.jar:lib/commons-exec-1.1.jar:lib/commons-io-2.2.jar:lib/commons-jxpath-1.3.jar:lib/commons-lang3-3.1.jar:lib/commons-logging-1.1.1.jar:lib/cssparser-0.9.8.jar:lib/dom4j-1.6.1.jar:lib/guava-14.0.jar:lib/hamcrest-core-1.3.jar:lib/hamcrest-library-1.3.jar:lib/htmlunit-2.11.jar:lib/htmlunit-core-js-2.11.jar:lib/httpclient-4.2.1.jar:lib/httpcore-4.2.1.jar:lib/httpmime-4.2.1.jar:lib/ini4j-0.5.2.jar:lib/jcommander-1.29.jar:lib/jetty-websocket-8.1.8.jar:lib/jna-3.4.0.jar:lib/jna-platform-3.4.0.jar:lib/json-20080701.jar:lib/junit-dep-4.11.jar:lib/log4j-1.2.13.jar:lib/nekohtml-1.9.17.jar:lib/netty-3.5.7.Final.jar:lib/operadriver-1.2.jar:lib/phantomjsdriver-1.0.1.jar:lib/poi-3.9-20121203.jar:lib/protobuf-java-2.4.1.jar:lib/sac-1.3.jar:lib/selenium-java-2.31.0.jar:lib/serializer-2.7.1.jar:lib/sqlite-jdbc-3.7.2.jar:lib/stax-api-1.0.1.jar:lib/testng-6.8.jar:lib/xalan-2.7.1.jar:lib/xercesImpl-2.10.0.jar:lib/xml-apis-1.4.01.jar:lib/xmlbeans-2.3.0.jar:."  com.evidon.areweprivateyet.Aggregator
 ```
 
 Using the databases in the input folder, Aggregator collects results and outputs a final file named analysis.xls.
