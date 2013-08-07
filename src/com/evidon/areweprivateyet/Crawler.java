@@ -1,3 +1,7 @@
+// Copyright 2013 Evidon.  All rights reserved.
+// Use of this source code is governed by a Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package com.evidon.areweprivateyet;
 
 import java.io.BufferedReader;
