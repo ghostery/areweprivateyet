@@ -1,4 +1,4 @@
-package com.evidon.arewebetteryet;
+package com.evidon.areweprivateyet;
 
 import java.awt.AWTException;
 import java.awt.Robot;

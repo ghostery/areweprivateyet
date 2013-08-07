@@ -1,4 +1,4 @@
-package com.evidon.arewebetteryet;
+package com.evidon.areweprivateyet;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,4 +1,4 @@
-package com.evidon.arewebetteryet;
+package com.evidon.areweprivateyet;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,7 +17,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
 
 public class Crawler {
-	// VM prop -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
+	// VM prop -Dawby_path=C:/Users/fixanoid-work/Desktop/areweprivateyet/bin/
 	String path = System.getProperty("awby_path");
 	ArrayList<String> urls = new ArrayList<String>();
 	StringBuilder out = new StringBuilder();
@@ -40,6 +40,11 @@ public class Crawler {
 
 	private String getDriverProfile() {
 		// C:\Users\ADMINI~1\AppData\Local\Temp\2\
+		/**
+		 * The temporary profile Selenium/Firefox creates should be 
+		 * located at java.io.tmpdir. Please check if its the same
+		 * on other OSes since I've used winblows.
+		 */
 		File sysTemp = new File(System.getProperty("java.io.tmpdir"));		
 		File pd = null;
 		long prevTime = 0;
@@ -153,7 +158,7 @@ public class Crawler {
 			killPopups(baseWindow, driver);
 		}
 
-		// navigating to the trip site for local storage copy.
+		// 4th party does not know when the crawl is over, so we send a trip signal by navigating to the "last" domain
 		try { driver.get("http://www.josesignanini.com"); } catch (TimeoutException te) { }
 		try { Thread.sleep(60 * 1000); } catch (InterruptedException e) { }
 		
@@ -162,7 +167,7 @@ public class Crawler {
 
 		driver.quit();
 		log("Crawling completed for " + namedProfile);
-		
+
 		recordLog(namedProfile);
 	}
 
@@ -178,7 +183,8 @@ public class Crawler {
 		 	- flash cookies
 		 */
 		try {
-			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", /*"requestpolicy", "noscript",*/ "cookies-blocked"};
+			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", 
+					/*"requestpolicy", "noscript",*/ "cookies-blocked"};
 			for (String profile : profiles) {
 				new Crawler(profile);
 			}

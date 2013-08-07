@@ -1,4 +1,4 @@
-package com.evidon.arewebetteryet;
+package com.evidon.areweprivateyet;
 
 import static org.junit.Assert.assertEquals;
 
