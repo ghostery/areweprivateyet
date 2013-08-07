@@ -17,7 +17,7 @@ All required libraries for the test are stored in lib directory.
 
 Results
 =======
-The results of several months worth of crawling is available for view on the project's website: http://www.areweprivateyet.com/
+The results of several months' worth of crawling are available on the project's website: http://www.areweprivateyet.com/
 
 Setup
 =====
