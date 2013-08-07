@@ -28,17 +28,14 @@ To set up the tool you will need Firefox (10 and up), fourthparty build (Ghoster
 utilities. We currently test the following extensions in addition to baseline:
 - Ghostery
 - DoNotTrackMe
-- Disconnect 2
+- Disconnect
 - Adblock Plus with Fanboys list
 - Adblock Plus with EasyList
 - TrackerBlock
-- RequestPolicy
-- NoScript
 - Firefox with Third Party cookies disabled
 
 Firefox profiles need to be set up prior to running crawler from analysis utilities. The profiles must be named
-as follows: __"ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "requestpolicy", "disconnect",
-"noscript", "cookies-blocked"__. Each profile needs to contain fourthparty install (tho this could be force-installed on the profile
+as follows: __"ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "disconnect", "cookies-blocked"__. Each profile needs to contain fourthparty install (tho this could be force-installed on the profile
 through Selenium within crawler) and the extension that is being tested. You are also responsible for setting up
 the extension in the way that you want to test, meaning that if you just install ABP and have no lists, obviously
 the result would be different if it did contain EasyPrivacy or any other list.
