@@ -1,38 +1,36 @@
-areweprivateyet
+Are We Private Yet?
 -------------------------
 
-This project is dedicated to automated recreation of Stanford's CIS "Tracking the Trackers Self Help Tools" study.
-Original study is located at this link: http://cyberlaw.stanford.edu/blog/2011/09/tracking-trackers-self-help-tools.
+This project is dedicated to automated recreation of Stanford's CIS [Tracking the Trackers: Self-Help Tools](http://cyberlaw.stanford.edu/blog/2011/09/tracking-trackers-self-help-tools) study.
 This project extends certain feature counts as well, such as, total bandwidth, redirects, local storage, etc.
 
-This project is separated broadly into 3 areas:
+This project is separated broadly into three areas:
 - Firefox setup for the project
-- fourthparty extension
+- [FourthParty](http://fourthparty.info) extension
 - Crawler and Analysis utilities
 
 The crawler is based on Selenium through Firefox WebDriver interface. Each run, while using an existing profile 
 as a base is actually a separate anonymous profile for Firefox, and as such, the last thing crawler will do is
-copy the fourthparty sqlite database into a path defined at run time.
+copy the FourthParty sqlite database into a path defined at runtime.
 
 All required libraries for the test are stored in lib directory.
 
 Results
 =======
-Results of several month worth of crawling is available for view on dedicated website: http://www.areweprivateyet.com/
-
+Results of several months worth of crawling is available for view on the project's website: http://www.areweprivateyet.com/
 
 Setup
 =====
 
-To set up the tool you will need Firefox (10 and up), fourthparty build (Ghostery fork), and arewebetteryet analysis 
+To set up the tool you will need Firefox (10 and up), [our FourthParty build](https://github.com/ghostery/fourthparty), and arewebetteryet analysis 
 utilities. We currently test the following extensions in addition to baseline:
 - Ghostery
 - DoNotTrackMe
 - Disconnect
-- Adblock Plus with Fanboys list
-- Adblock Plus with EasyList
+- Adblock Plus with [Fanboy Adblock list](http://www.fanboy.co.nz/fanboy-adblock.txt)
+- Adblock Plus with [EasyList](https://easylist-downloads.adblockplus.org/easylist.txt)
 - TrackerBlock
-- Firefox with Third Party cookies disabled
+- Firefox with third-party cookies disabled
 
 Firefox profiles need to be set up prior to running crawler from analysis utilities. The profiles must be named
 as follows: __"ghostery", "dntme", "abp-fanboy", "abp-easylist", "trackerblock", "disconnect", "cookies-blocked"__. Each profile needs to contain fourthparty install (tho this could be force-installed on the profile
