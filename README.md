@@ -95,7 +95,7 @@ You may file an issue using GitHub's own issue tracker: https://github.com/ghost
 
 How to submit a fix/pull-request
 ================================
-You may fork the project and modify at will. your changes may be submitted back to us via a GitHub's pull
+You may fork the project and modify at will. Your changes may be submitted back to us via a GitHub's pull
 request. Your changes are subject to review and CLA agreement.
 
 
