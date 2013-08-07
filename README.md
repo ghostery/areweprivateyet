@@ -60,8 +60,8 @@ java -Dawby_path=/output_path/ -classpath "apache-mime4j-0.6.jar:lib/bsh-1.3.0.j
 awby_path is the local setting for location of the top500.list file as well as the input and output folder that will 
 be used.  This value is used in Crawler and Aggregator classes.
 
-After each extension's crawl is completed, Crawler will copy fourthparty SQLite database to the output directory 
-(awby_path) to be used in the Aggregator utility later on.  The file name of the copied fourthparty database is 
+After each extension's crawl is completed, Crawler will copy the FourthParty SQLite database to the output directory 
+(awby_path) to be used in the Aggregator utility later on.  The file name of the copied FourthParty database is 
 fourthparty-profileName.sqlite.
 
 Crawling may be done in any order and at any time prior to the running of analysis utilites. You may also use another
