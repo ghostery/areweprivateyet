@@ -261,7 +261,9 @@ public class Analyzer {
 
 		ResultSet rs = statement.executeQuery("select id, scope from local_storage");
 		while (rs.next()) {
+			// TODO: we should handle or remove about: and other internal pages
 			String host = rs.getString("scope");
+			// TODO: might want to anchor to the end of the string only
 			host = host.replaceAll(":https?:[0-9][0-9][0-9]?", "");
 			host = new StringBuilder(host).reverse().toString();
 			
@@ -309,27 +311,36 @@ public class Analyzer {
 
 		// Request Count
 		ResultSet rs = statement.executeQuery(
+				// grab all http_requests from deeply nested frames (frames with another frame for parent)
+				// TODO: missing first level frame?
 				"select hr.* from "+
 				"pages p, http_requests hr "+
 				"where p.parent_id != p.top_id and hr.page_id = p.id "+
-				
+				// TODO: "where p.id != p.top_id and hr.page_id = p.id "+ returns more pages including the intermediaries?
+
 				"union all "+
-				
+
+				// grab all http_requests from top level document where requests domain is not the same as pages domain (3rd party requests)
+
 				"select hr.* from "+ 
 				"pages p, http_requests hr "+
 				"where p.id = p.top_id and hr.page_id = p.id and hr.public_suffix != p.public_suffix "+ 
 				"and hr.public_suffix not in ( "+
-				
-				"select public_suffix from ( "+
-				"select hr.id,hr.url,hr.method,hr.referrer,hr.page_id,hr.public_suffix,count( distinct p.public_suffix) count from "+ 
-				"pages p, http_requests hr "+
-				"where p.id = p.top_id and hr.page_id = p.id and hr.public_suffix != p.public_suffix "+
-				"group by hr.public_suffix "+
-				"having count = 1 ) cdns)");
+
+					// try to exclude domains that are only linked to a single site
+					// same query as the one above only limited to third-party requests that show up on a single page
+					"select public_suffix from ( "+
+						"select hr.public_suffix, count( distinct p.public_suffix) count from "+ 
+						"pages p, http_requests hr "+
+						"where p.id = p.top_id and hr.page_id = p.id and hr.public_suffix != p.public_suffix "+
+						"group by hr.public_suffix "+
+						"having count = 1 )" +
+					" cdns)");
 		while (rs.next()) {
 			String domain = "";
 			
 			try {
+				// TODO: whats wrong with public suffix on http_requests?
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
 			} catch (Exception e) {
 				System.out.println("\tCant parse this domain: " + rs.getString("url"));
@@ -337,48 +348,23 @@ public class Analyzer {
 				continue;
 			}
 
-			try {
-				if (requestCountPerDomain.containsKey(domain)) {
-					// increase hit count
-					Integer count = requestCountPerDomain.get(domain);
-					requestCountPerDomain.put(domain, new Integer(count.intValue() + 1));
-				} else {
-					// insert new domain and initial count
-					requestCountPerDomain.put(domain, new Integer(1));
-				}
-			} catch (java.lang.IllegalArgumentException e) {
+			// Count by domain so we can review the domain list for false positives. AWPY chart only uses overall number
+			// TODO: I think it may be possible to just group on public suffixes in the query
+			if (requestCountPerDomain.containsKey(domain)) {
+				// increase hit count
+				Integer count = requestCountPerDomain.get(domain);
+				requestCountPerDomain.put(domain, new Integer(count.intValue() + 1));
+			} else {
+				// insert new domain and initial count
 				requestCountPerDomain.put(domain, new Integer(1));
 			}
 		}
 		rs.close();
 
+		
+		// TODO we should be ignoring opt-out cookies set by privacy extensions
 		// Set cookie response counts
 		rs = statement.executeQuery(
-				/*
-				"select hr.url, htr.name, htr.value from http_response_headers htr, http_responses hr where htr.name = 'Set-Cookie' " +
-				"and htr.http_response_id = hr.id and hr.url is not null and hr.page_id in (select id  from pages where id not in " +
-				"(select distinct(top_id) from pages where location != '' and public_suffix is not null and top_id is not null ) and " +
-				"location != '' and public_suffix is not null and top_id is not null )"
-				*/
-				/*
-				"select hr.url, htr.name, htr.value from http_requests hr, http_response_headers htr where  " +
-				"htr.name = 'Set-Cookie' and htr.http_response_id = hr.id and hr.url is not null " +
-				"and hr.public_suffix in  " +
-				"( " +
-				"select y from ( " +
-				"select y, count (distinct x) count " +
-				"from " +
-				"(select p.public_suffix x,hr.public_suffix y,count(1) " +
-				"from  " +
-				"pages p " +
-				"inner join http_requests hr " +
-				"on p.top_id=hr.page_id " +
-				"where p.public_suffix!=hr.public_suffix and hr.page_id != -1 and hr.page_id != 4 " +
-				"group by x,y) third_parties " +
-				"group by y " +
-				"having count >1) " +
-				")"
-				*/
 				"select hr.url, htr.name, htr.value from  " +
 				"pages p, http_requests hr, http_response_headers htr " +
 				"where p.parent_id != p.top_id and hr.page_id = p.id  " +

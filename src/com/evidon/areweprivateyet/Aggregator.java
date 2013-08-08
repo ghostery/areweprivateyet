@@ -402,6 +402,16 @@ public class Aggregator {
 		}
 		sheet++;
 
+		// When content is created, baseline is used as a base for every entry. For example,
+		// if baseline contained doubleclick.com, this will be output and each other analyzer's
+		// map, like ghosterys analyzer is then asked for the content's mapping for doubleclick.
+		// So, if baseline does not contain blah.com, yet ghostery map does, this entry is never
+		// shown in the spreadsheet or any other results.
+		
+		// so this means if we have tracker/whatever URLs in a non-baseline profile
+		// and these URLs are NOT in the baseline profile,
+		// we wouldn't see those trackers/whatever in the final comparison.
+		
 		// content: HTTP Requests
 		s = wb.createSheet();
 		wb.setSheetName(sheet, "HTTP Requests");
