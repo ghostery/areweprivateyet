@@ -98,14 +98,4 @@ You may file an issue using GitHub's own issue tracker: https://github.com/ghost
 How to submit a fix/pull-request
 ================================
 You may fork the project and modify at will. Your changes may be submitted back to us via a GitHub's pull
-request. Your changes are subject to review and CLA agreement.
-
-
-How to sign CLA
-===============
-Evidon requires a CLA agreement to be signed before any code may be accepted. The CLAs and submission
-information could be viewed and signed here:
-
-Individual - https://cla.evidon.com/individual
-
-Corporate - https://cla.evidon.com/corporate
+request.
