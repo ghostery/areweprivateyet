@@ -350,11 +350,16 @@ public class Analyzer {
 
 			// Count by domain so we can review the domain list for false positives. AWPY chart only uses overall number
 			// TODO: I think it may be possible to just group on public suffixes in the query
-			if (requestCountPerDomain.containsKey(domain)) {
-				// increase hit count
-				Integer count = requestCountPerDomain.get(domain);
-				requestCountPerDomain.put(domain, new Integer(count.intValue() + 1));
-			} else {
+			try {
+				if (requestCountPerDomain.containsKey(domain)) {
+					// increase hit count
+					Integer count = requestCountPerDomain.get(domain);
+					requestCountPerDomain.put(domain, new Integer(count.intValue() + 1));
+				} else {
+					// insert new domain and initial count
+					requestCountPerDomain.put(domain, new Integer(1));
+				}
+			} catch (Exception e) {
 				// insert new domain and initial count
 				requestCountPerDomain.put(domain, new Integer(1));
 			}
