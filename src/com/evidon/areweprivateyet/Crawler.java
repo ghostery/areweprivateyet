@@ -27,9 +27,9 @@ public class Crawler {
 	StringBuilder out = new StringBuilder();
 	
 	private void recordLog(String name) throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(path + "crawl-" + name + ".log"));
-		out.write(out.toString());
-		out.close();
+		BufferedWriter log = new BufferedWriter(new FileWriter(path + "crawl-" + name + ".log"));
+		log.write(out.toString());
+		log.close();
 	}
 
 	private void loadSiteList() throws Exception {
@@ -99,7 +99,7 @@ public class Crawler {
 	public Crawler(String namedProfile) throws Exception {
 		loadSiteList();
 
-		int sleepTime = (namedProfile.equals("baseline") ? 10 : 5);
+		int sleepTime = 10;//(namedProfile.equals("baseline") ? 10 : 5);
 		boolean started = false;
 		String baseWindow = "";
 
@@ -186,14 +186,26 @@ public class Crawler {
 	 	TODO:
 		 	- flash cookies
 		 */
-		try {
-			String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", 
-					/*"requestpolicy", "noscript",*/ "cookies-blocked"};
+
+			String[] profiles = {
+						//"baseline", 
+						//"ghostery",
+						"dntme", 
+						"disconnect",
+						"abp-easylist", 
+						"abp-suggested",
+						"abe-suggested"//,
+						//"dnt",
+						//"cookies-blocked",
+						//"trackerblock",
+						//"badger"
+					};
 			for (String profile : profiles) {
-				new Crawler(profile);
+				try {
+					new Crawler(profile);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }

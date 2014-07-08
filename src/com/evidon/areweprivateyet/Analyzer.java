@@ -18,7 +18,7 @@ import com.google.common.collect.Ordering;
 
 public class Analyzer {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
-	String path = System.getProperty("awby_path");
+	String path = "Z:/complete-crawls/5.2014/";//System.getProperty("awby_path"); //
 
 	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	//Map<String, Integer> requestCountPerDomainMinusFirstParties = null;

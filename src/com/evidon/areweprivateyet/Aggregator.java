@@ -29,7 +29,7 @@ import org.json.JSONObject;
 
 public class Aggregator {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
-	String path = System.getProperty("awby_path");
+	String path = System.getProperty("awby_path"); // "Z:/complete-crawls/4.2014/";
 
 	Map<String, Analyzer> results = new LinkedHashMap<String, Analyzer>();
 	Map<String, Map<String, String>> totals = new LinkedHashMap<String, Map<String, String>>();
@@ -537,7 +537,19 @@ public class Aggregator {
 	public static void main(String[] args) {
 		Aggregator agg = new Aggregator();
 
-		String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", /*"requestpolicy", "noscript",*/ "cookies-blocked"};
+		String[] profiles = {
+				"baseline", 
+				"ghostery", 
+				"dntme", 
+				"disconnect", 
+				"abp-easylist",
+				//"trackerblock", 
+				"cookies-blocked",
+				"abp-suggested",
+				"abe-suggested",
+				"dnt",
+				"badger"
+		};
 		//String[] profiles = {"baseline", "ghostery"};
 		for (String profile : profiles) {
 			agg.addResults(profile, "fourthparty-" + profile + ".sqlite");	
