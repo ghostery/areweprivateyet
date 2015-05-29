@@ -4,9 +4,10 @@
 
 package com.evidon.areweprivateyet;
 
-import java.net.URI;
+//import java.net.URI;
 
 import com.google.common.net.InternetDomainName;
+import com.uri.URI;
 
 public class AnalysisUtils {
 	/**
@@ -62,10 +63,10 @@ public class AnalysisUtils {
 			url = url.replaceAll(":8080", "");
 		}
 		
-		String host = new URI(url).getHost();
+		String host = URI.parse(url).host();
 		try {
 			InternetDomainName domainName = InternetDomainName.from(host);
-			return domainName.topPrivateDomain().name();
+			return domainName.topPrivateDomain().toString();
 		} catch (java.lang.IllegalStateException e) {
 			return AnalysisUtils.getBaseDomain(url);
 		} catch (java.lang.IllegalArgumentException e) {

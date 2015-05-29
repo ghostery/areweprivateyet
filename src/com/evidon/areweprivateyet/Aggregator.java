@@ -29,8 +29,9 @@ import org.json.JSONObject;
 
 public class Aggregator {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
-	String path = System.getProperty("awby_path");
-
+	private String inPath = System.getProperty("awby_path");
+	private String outPath = inPath  + "results/";
+	
 	Map<String, Analyzer> results = new LinkedHashMap<String, Analyzer>();
 	Map<String, Map<String, String>> totals = new LinkedHashMap<String, Map<String, String>>();
 	Map<String, Map<String, String>> decrease = new LinkedHashMap<String, Map<String, String>>();
@@ -44,7 +45,7 @@ public class Aggregator {
 	public Aggregator() {
 		// load exclusions
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(path + "exclusions.list"));
+			BufferedReader in = new BufferedReader(new FileReader(inPath + "exclusions.list"));
 			String line = in.readLine();
 			while (line != null) {
 				exclusions.add(line);
@@ -199,7 +200,12 @@ public class Aggregator {
 				decrease.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
 			} else {
 				Map<String, String> contents = decrease.get(s.getRow(1).getCell(i + 1).getStringCellValue());
-				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				try {
+					contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				}
+				catch(Exception e) {
+					contents.put(s.getSheetName(), "Error");
+				}
 				
 				decrease.put(s.getRow(1).getCell(i + 1).getStringCellValue(), contents);
 			}
@@ -313,7 +319,7 @@ public class Aggregator {
 
 		String o = top.toString();
 		o += "\n" + content.toString();
-		BufferedWriter bw = new BufferedWriter(new FileWriter(path + "tsv"));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outPath + "tsv"));
 		bw.write(o);
 		bw.close();
 	}
@@ -351,14 +357,14 @@ public class Aggregator {
 		
 		json.put("decrease", jsonTotals);
 		
-		BufferedWriter bw = new BufferedWriter(new FileWriter(path + "json"));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outPath + "json"));
 		bw.write(json.toString());
 		bw.close();
 	}
 
 	public void createSpreadSheet() throws Exception {
 		int row = 2, cell = 0, sheet = 0;
-		FileOutputStream file = new FileOutputStream(path + "analysis.xls");
+		FileOutputStream file = new FileOutputStream(outPath + "analysis.xls");
 
 		Workbook wb = new HSSFWorkbook();
 
@@ -395,7 +401,12 @@ public class Aggregator {
 				evaluator.evaluateFormulaCell(c);
 				
 				Map<String, String> contents = new LinkedHashMap<String, String>();
+				try {
 				contents.put(s.getSheetName(), c.getNumericCellValue() + "");
+				}
+				catch(Exception e) {
+					contents.put(s.getSheetName(), 0 + "");
+				}
 				decrease.put(database, contents);
 			}
 			cell ++;
@@ -537,8 +548,9 @@ public class Aggregator {
 	public static void main(String[] args) {
 		Aggregator agg = new Aggregator();
 
-		String[] profiles = {"baseline", "ghostery", "dntme", "disconnect", "abp-fanboy", "abp-easylist", "trackerblock", /*"requestpolicy", "noscript",*/ "cookies-blocked"};
-		//String[] profiles = {"baseline", "ghostery"};
+//		String[] profiles = {"abp-fanboy","trackerblock", "cookies-blocked", "avgdnt"};
+		String[] profiles = {"baseline", "ghostery", "ublock", "dntme-blue", "disconnect",  "abp-easylist", "trackerblock", /*"abp-fanboy","requestpolicy", "noscript","cookies-blocked"*/ };
+		
 		for (String profile : profiles) {
 			agg.addResults(profile, "fourthparty-" + profile + ".sqlite");	
 		}

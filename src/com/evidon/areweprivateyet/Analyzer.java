@@ -18,7 +18,7 @@ import com.google.common.collect.Ordering;
 
 public class Analyzer {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
-	String path = System.getProperty("awby_path");
+	String outPath = System.getProperty("awby_path") + "results/";
 
 	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	//Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
@@ -28,7 +28,7 @@ public class Analyzer {
 	Map<String, Integer> cookieTotals = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 	Map<String, Integer> localStorageContents = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
 
-	int totalContentLength = 0;
+	long totalContentLength = 0;
 	
 
 	private void createPublicSuffix(Statement statement) throws Exception {
@@ -294,7 +294,7 @@ public class Analyzer {
 
 	public Analyzer(String dbFileName) throws Exception {
 		Class.forName("org.sqlite.JDBC");
-		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + path + dbFileName);
+		Connection conn = DriverManager.getConnection("jdbc:sqlite:" + outPath + dbFileName);
 
 		Statement statement = conn.createStatement();
 
@@ -342,6 +342,10 @@ public class Analyzer {
 			try {
 				// TODO: whats wrong with public suffix on http_requests?
 				domain = AnalysisUtils.getGuavaDomain(rs.getString("url"));
+				if(domain.isEmpty()) {
+					System.out.println("\tCant parse this domain: " + rs.getString("url"));
+					continue;
+				}
 			} catch (Exception e) {
 				System.out.println("\tCant parse this domain: " + rs.getString("url"));
 				//e.printStackTrace();
@@ -492,7 +496,9 @@ public class Analyzer {
 		
 		// total content length
 		rs = statement.executeQuery("select value from http_response_headers where name = 'Content-Length'");
+		int count = 0;
 		while(rs.next()) {
+			count++;
 			totalContentLength += rs.getInt("value");
 		}
 		rs.close();
