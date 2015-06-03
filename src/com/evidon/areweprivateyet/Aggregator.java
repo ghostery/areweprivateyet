@@ -67,8 +67,8 @@ public class Aggregator {
 		}
 	}
 	
-	private Map<String, Integer> getMap(String map, Analyzer ra) {
-		Map<String, Integer> mapToUse = null;
+	private Map<String, Long> getMap(String map, Analyzer ra) {
+		Map<String, Long> mapToUse = null;
 		
 		switch (map) {
 			case "localStorageContents":
@@ -99,7 +99,7 @@ public class Aggregator {
 		for (String database : results.keySet()) {
 			if (database.equals("baseline")) {
 				Analyzer ra = results.get(database);
-				Map<String, Integer> mapToUse = this.getMap(map, ra);
+				Map<String, Long> mapToUse = this.getMap(map, ra);
 
 				for (String domain : mapToUse.keySet()) {
 					if ( (!domains.contains(domain)) && !exclusions.contains(domain) ) {
@@ -125,7 +125,7 @@ public class Aggregator {
 			for (String database : results.keySet()) {
 				Analyzer ra = results.get(database);
 
-				Map<String, Integer> mapToUse = this.getMap(map, ra);
+				Map<String, Long> mapToUse = this.getMap(map, ra);
 
 				c = r.createCell(cellnum);
 				try {
@@ -239,19 +239,20 @@ public class Aggregator {
 			letter = "K";
 		} else if (i == 10) {
 			letter = "L";
-		} else if (i == 12) {
+		} else if (i == 11) {
 			letter = "M";
-		} else if (i == 13) {
+		} else if (i == 12) {
 			letter = "N";
-		} else if (i == 14) {
+		} else if (i == 13) {
 			letter = "O";
 		}
 		
 		return letter;
 	}
 
-	private void createHeader(Workbook wb, Sheet s, String sheetTitle, int skipCell) {
-		int rownum = 0, cellnum = 0;
+	private void createHeader(Workbook wb, Sheet s, String sheetTitle, long skipCell) {
+		int rownum = 0;
+		int cellnum = 0;
 		Row r = null;
 		Cell c = null;
 
@@ -363,7 +364,8 @@ public class Aggregator {
 	}
 
 	public void createSpreadSheet() throws Exception {
-		int row = 2, cell = 0, sheet = 0;
+		int row = 2, cell = 0;
+		int sheet = 0;
 		FileOutputStream file = new FileOutputStream(outPath + "analysis.xls");
 
 		Workbook wb = new HSSFWorkbook();
@@ -459,7 +461,8 @@ public class Aggregator {
 		s = wb.createSheet();
 		wb.setSheetName(sheet, "Overall");
 		
-		int rownum = 0, cellnum = 0;
+		int rownum = 0;
+		int cellnum = 0;
 
 		// Header
 		r = s.createRow(rownum);
@@ -548,8 +551,8 @@ public class Aggregator {
 	public static void main(String[] args) {
 		Aggregator agg = new Aggregator();
 
-//		String[] profiles = {"abp-fanboy","trackerblock", "cookies-blocked", "avgdnt"};
-		String[] profiles = {"baseline", "ghostery", "ublock", "dntme-blue", "disconnect",  "abp-easylist", "trackerblock", /*"abp-fanboy","requestpolicy", "noscript","cookies-blocked"*/ };
+		String[] profiles = {"baseline", "cookies-blocked", "dnt"};
+		//String[] profiles = {"baseline", "ghostery", "ublock", "abe-suggested", "abp-suggested", "dntme-blue", "disconnect",  "abp-easylist", "trackerblock", "badger", "abp-fanboy",/*"requestpolicy", "noscript"*/"cookies-blocked"};
 		
 		for (String profile : profiles) {
 			agg.addResults(profile, "fourthparty-" + profile + ".sqlite");	

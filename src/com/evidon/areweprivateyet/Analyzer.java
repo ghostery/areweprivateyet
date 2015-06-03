@@ -20,13 +20,13 @@ public class Analyzer {
 	// VM prop: -Dawby_path=C:/Users/fixanoid-work/Desktop/arewebetteryet/bin/
 	String outPath = System.getProperty("awby_path") + "results/";
 
-	Map<String, Integer> requestCountPerDomain = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	//Map<String, Integer> requestCountPerDomainMinusFirstParties = null;
-	Map<String, Integer> setCookieResponses = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	Map<String, Integer> cookiesAdded = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	Map<String, Integer> cookiesDeleted = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	Map<String, Integer> cookieTotals = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
-	Map<String, Integer> localStorageContents = new ValueComparableMap<String, Integer>(Ordering.natural().reverse());
+	Map<String, Long> requestCountPerDomain = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
+	//Map<String, Long> requestCountPerDomainMinusFirstParties = null;
+	Map<String, Long> setCookieResponses = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
+	Map<String, Long> cookiesAdded = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
+	Map<String, Long> cookiesDeleted = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
+	Map<String, Long> cookieTotals = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
+	Map<String, Long> localStorageContents = new ValueComparableMap<String, Long>(Ordering.natural().reverse());
 
 	long totalContentLength = 0;
 	
@@ -40,7 +40,7 @@ public class Analyzer {
 
 		statement.getConnection().setAutoCommit(false);
 
-		int count = 0;
+		long count = 0;
 		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
 				"UPDATE pages SET public_suffix=? WHERE id=?");
 		
@@ -197,7 +197,7 @@ public class Analyzer {
 		}
 		
 		statement.getConnection().setAutoCommit(false);
-		int count = 0;
+		long count = 0;
 		PreparedStatement updateQuery = statement.getConnection().prepareStatement(
 				"UPDATE pages SET top_id=? WHERE id=?");
 		
@@ -357,15 +357,15 @@ public class Analyzer {
 			try {
 				if (requestCountPerDomain.containsKey(domain)) {
 					// increase hit count
-					Integer count = requestCountPerDomain.get(domain);
-					requestCountPerDomain.put(domain, new Integer(count.intValue() + 1));
+					Long count = requestCountPerDomain.get(domain);
+					requestCountPerDomain.put(domain, new Long(count.intValue() + 1));
 				} else {
 					// insert new domain and initial count
-					requestCountPerDomain.put(domain, new Integer(1));
+					requestCountPerDomain.put(domain, new Long(1));
 				}
 			} catch (Exception e) {
 				// insert new domain and initial count
-				requestCountPerDomain.put(domain, new Integer(1));
+				requestCountPerDomain.put(domain, new Long(1));
 			}
 		}
 		rs.close();
@@ -407,14 +407,14 @@ public class Analyzer {
 			try {
 				if (setCookieResponses.containsKey(domain)) {
 					// increase hit count
-					Integer count = setCookieResponses.get(domain);
-					setCookieResponses.put(domain, new Integer(count.intValue() + 1));
+					Long count = setCookieResponses.get(domain);
+					setCookieResponses.put(domain, new Long(count.intValue() + 1));
 				} else {
 					// insert new domain and initial count
-					setCookieResponses.put(domain, new Integer(1));
+					setCookieResponses.put(domain, new Long(1));
 				}
 			} catch (java.lang.IllegalArgumentException e) {
-				setCookieResponses.put(domain, new Integer(1));
+				setCookieResponses.put(domain, new Long(1));
 			}
 		}
 		rs.close();
@@ -429,27 +429,27 @@ public class Analyzer {
 				try {
 					if (cookiesAdded.containsKey(domain)) {
 						// increase hit count
-						Integer count = cookiesAdded.get(domain);
-						cookiesAdded.put(domain, new Integer(count.intValue() + 1));
+						Long count = cookiesAdded.get(domain);
+						cookiesAdded.put(domain, new Long(count.intValue() + 1));
 					} else {
 						// insert new domain and initial count
-						cookiesAdded.put(domain, new Integer(1));
+						cookiesAdded.put(domain, new Long(1));
 					}
 				} catch (java.lang.IllegalArgumentException e) {
-					cookiesAdded.put(domain, new Integer(1));
+					cookiesAdded.put(domain, new Long(1));
 				}
 			} else if (rs.getString("change").equals("deleted")) {
 				try {
 					if (cookiesDeleted.containsKey(domain)) {
 						// increase hit count
-						Integer count = cookiesDeleted.get(domain);
-						cookiesDeleted.put(domain, new Integer(count.intValue() + 1));
+						Long count = cookiesDeleted.get(domain);
+						cookiesDeleted.put(domain, new Long(count.intValue() + 1));
 					} else {
 						// insert new domain and initial count
-						cookiesDeleted.put(domain, new Integer(1));
+						cookiesDeleted.put(domain, new Long(1));
 					}
 				} catch (java.lang.IllegalArgumentException e) {
-					cookiesDeleted.put(domain, new Integer(1));
+					cookiesDeleted.put(domain, new Long(1));
 				}
 			}
 		}
@@ -458,7 +458,7 @@ public class Analyzer {
 		// Subtract deleted from added to achieve cookie totals
 		//		Note: May be possible just to use the above query set to do the same.
 		for (String domain : cookiesAdded.keySet()) {
-			int cookieNum = cookiesAdded.get(domain);
+			long cookieNum = cookiesAdded.get(domain);
 			
 			try {
 				if (cookiesDeleted.containsKey(domain)) {
@@ -468,7 +468,7 @@ public class Analyzer {
 				// nothing in the deleted map.
 			}
 			
-			cookieTotals.put(domain, new Integer(cookieNum));
+			cookieTotals.put(domain, new Long(cookieNum));
 		}
 		
 		
@@ -481,14 +481,14 @@ public class Analyzer {
 			try {
 				if (localStorageContents.containsKey(domain)) {
 					// increase hit count
-					Integer count = localStorageContents.get(domain);
-					localStorageContents.put(domain, new Integer(count.intValue() + 1));
+					Long count = localStorageContents.get(domain);
+					localStorageContents.put(domain, new Long(count.intValue() + 1));
 				} else {
 					// insert new domain and initial count
-					localStorageContents.put(domain, new Integer(1));
+					localStorageContents.put(domain, new Long(1));
 				}
 			} catch (java.lang.IllegalArgumentException e) {
-				localStorageContents.put(domain, new Integer(1));
+				localStorageContents.put(domain, new Long(1));
 			}
 		}
 		rs.close();
@@ -496,9 +496,7 @@ public class Analyzer {
 		
 		// total content length
 		rs = statement.executeQuery("select value from http_response_headers where name = 'Content-Length'");
-		int count = 0;
 		while(rs.next()) {
-			count++;
 			totalContentLength += rs.getInt("value");
 		}
 		rs.close();
